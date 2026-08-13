@@ -121,10 +121,10 @@ function HomepageFooter() {
               </a>
 
               <a
-                href="mailto:info@winstonmedical.co.ke"
+                href="mailto:info@winstonmedicalcentre.co.ke"
                 className="block transition hover:text-white"
               >
-                info@winstonmedical.co.ke
+                info@winstonmedicalcentre.co.ke
               </a>
 
               <a

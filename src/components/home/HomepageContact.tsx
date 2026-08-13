@@ -56,7 +56,7 @@ export default function HomepageContact() {
 
           {/* Email Card */}
           <a
-            href="mailto:info@winstonmedical.co.ke"
+            href="mailto:info@winstonmedicalcentre.co.ke"
             className="group relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-white/[0.08] to-white/[0.02] backdrop-blur-2xl p-8 shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:border-fuchsia-400/50 hover:bg-white/[0.12] hover:shadow-[0_20px_50px_rgba(217,70,239,0.15)] flex flex-col justify-between"
           >
             <div className="pointer-events-none absolute -right-12 -top-12 h-36 w-36 rounded-full bg-fuchsia-500/20 blur-2xl transition duration-500 group-hover:scale-150" />
@@ -69,7 +69,7 @@ export default function HomepageContact() {
                 <ArrowUpRight size={20} className="text-slate-500 group-hover:text-fuchsia-400 transition-colors" />
               </div>
               <h3 className="text-lg font-bold text-white group-hover:text-fuchsia-300 transition-colors">Email Address</h3>
-              <p className="mt-2 text-sm text-slate-300 truncate">info@winstonmedical.co.ke</p>
+              <p className="mt-2 text-sm text-slate-300 truncate">info@winstonmedicalcentre.co.ke</p>
             </div>
 
             <span className="mt-6 inline-block text-xs font-semibold text-fuchsia-400">Send a Message →</span>
