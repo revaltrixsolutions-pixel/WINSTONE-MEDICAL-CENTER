@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Trash2, Plus, Upload, Link as LinkIcon, Home, Video as VideoIcon, Image as ImageIcon } from "lucide-react";
+import { Trash2, Plus, Upload, Link as LinkIcon, Home } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface GalleryItem {
