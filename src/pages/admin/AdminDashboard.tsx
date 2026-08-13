@@ -5,6 +5,7 @@ import {
   ArrowRight,
   Sparkles,
   Users,
+  Image as ImageIcon,
 } from "lucide-react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 
@@ -75,6 +76,18 @@ export default function AdminDashboard() {
               <Users size={18} />
               <span>Manage Doctors</span>
             </Link>
+
+            <Link
+              to="/admin/gallery"
+              className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-bold transition ${
+                location.pathname === "/admin/gallery"
+                  ? "bg-cyan-500 text-slate-950 shadow-lg shadow-cyan-500/20"
+                  : "text-slate-300 hover:bg-white/5 hover:text-white"
+              }`}
+            >
+              <ImageIcon size={18} />
+              <span>Manage Gallery</span>
+            </Link>
           </nav>
         </div>
 
@@ -99,11 +112,11 @@ export default function AdminDashboard() {
               </div>
               <h2 className="text-3xl font-extrabold text-white">Winston Medical Management</h2>
               <p className="mt-2 text-sm text-slate-300">
-                Select an administration module below to manage patient appointments, schedules, doctors, and medical offerings.
+                Select an administration module below to manage patient appointments, schedules, doctors, gallery, and medical offerings.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <Link
                 to="/appointments"
                 className="group rounded-3xl border border-white/10 bg-gradient-to-b from-white/[0.08] to-white/[0.02] p-8 shadow-2xl transition hover:border-cyan-400/50 hover:bg-white/[0.12] flex flex-col justify-between"
@@ -157,6 +170,25 @@ export default function AdminDashboard() {
                 </div>
                 <div className="mt-8 flex items-center gap-2 text-xs font-bold text-emerald-400">
                   <span>Open Doctors Module</span>
+                  <ArrowRight size={15} className="transition-transform group-hover:translate-x-1.5" />
+                </div>
+              </Link>
+
+              <Link
+                to="/admin/gallery"
+                className="group rounded-3xl border border-white/10 bg-gradient-to-b from-white/[0.08] to-white/[0.02] p-8 shadow-2xl transition-all hover:border-cyan-400/50 hover:bg-white/[0.12] flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-teal-600 text-white shadow-lg shadow-cyan-500/30 mb-6 group-hover:scale-110 transition-transform">
+                    <ImageIcon size={26} />
+                  </div>
+                  <h3 className="text-xl font-bold text-white group-hover:text-cyan-300 transition-colors">Hospital Gallery</h3>
+                  <p className="mt-2 text-sm text-slate-300 leading-relaxed">
+                    Upload facility photos, embed videos, and manage active media displayed on client side.
+                  </p>
+                </div>
+                <div className="mt-8 flex items-center gap-2 text-xs font-bold text-cyan-400">
+                  <span>Open Gallery Module</span>
                   <ArrowRight size={15} className="transition-transform group-hover:translate-x-1.5" />
                 </div>
               </Link>
