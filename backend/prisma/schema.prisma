@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model MedicalService {
+  id               String   @id @default(uuid())
+  name             String   @unique
+  shortDescription String?
+  description      String
+  icon             String
+  imageUrl         String?
+  imageUrls        String[]
+  active           Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("medical_services")
+}
+
+model Doctor {
+  id             String                @id @default(uuid())
+  name           String
+  specialization String
+  qualification  String?
+  phone          String
+  email          String
+  bio            String?
+  imageUrls      String[]
+  active         Boolean               @default(true)
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+  messages       PatientMessage[]
+  ratings        DoctorRating[]
+  appointments   AppointmentRequest[]
+
+  @@map("doctors")
+}
+
+model PatientMessage {
+  id          String   @id @default(uuid())
+  doctorId    String
+  doctorName  String
+  messageText String
+  date        String
+  createdAt   DateTime @default(now())
+  doctor      Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@map("patient_messages")
+}
+
+model DoctorRating {
+  id         String   @id @default(uuid())
+  doctorId   String
+  doctorName String
+  rating     Int
+  date       String
+  createdAt  DateTime @default(now())
+  doctor     Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@map("doctor_ratings")
+}
+
+model AppointmentRequest {
+  id              String   @id @default(uuid())
+  doctorId        String
+  doctorName      String
+  patientName     String
+  patientPhone    String
+  appointmentDate String
+  status          String   @default("Pending") // Pending, Confirmed, Cancelled
+  date            String
+  createdAt       DateTime @default(now())
+  doctor          Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@map("appointment_requests")
+}
