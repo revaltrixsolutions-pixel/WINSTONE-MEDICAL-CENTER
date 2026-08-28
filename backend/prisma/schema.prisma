@@ -51,11 +51,7 @@ model PatientMessage {
   date        String
   createdAt   DateTime @default(now())
 
-  doctor Doctor @relation(
-    fields: [doctorId],
-    references: [id],
-    onDelete: Cascade
-  )
+  doctor Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
 
   @@map("patient_messages")
 }
@@ -68,11 +64,7 @@ model DoctorRating {
   date       String
   createdAt  DateTime @default(now())
 
-  doctor Doctor @relation(
-    fields: [doctorId],
-    references: [id],
-    onDelete: Cascade
-  )
+  doctor Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
 
   @@map("doctor_ratings")
 }
@@ -101,11 +93,7 @@ model Appointment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  doctor Doctor? @relation(
-    fields: [doctorId],
-    references: [id],
-    onDelete: SetNull
-  )
+  doctor Doctor? @relation(fields: [doctorId], references: [id], onDelete: SetNull)
 
   @@index([doctorId])
   @@index([patientPhone])
