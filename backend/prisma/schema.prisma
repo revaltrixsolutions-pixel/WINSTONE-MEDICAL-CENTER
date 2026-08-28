@@ -1,115 +1,115 @@
 generator client {
-provider = "prisma-client-js"
-output   = "../generated/prisma"
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
 }
 
 datasource db {
-provider = "postgresql"
-url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model MedicalService {
-id               String   @id @default(uuid())
-name             String   @unique
-shortDescription String?
-description      String
-icon             String
-imageUrl         String?
-imageUrls        String[]
-active           Boolean  @default(true)
-createdAt        DateTime @default(now())
-updatedAt        DateTime @updatedAt
+  id               String   @id @default(uuid())
+  name             String   @unique
+  shortDescription String?
+  description      String
+  icon             String
+  imageUrl         String?
+  imageUrls        String[]
+  active           Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
-@@map("medical_services")
+  @@map("medical_services")
 }
 
 model Doctor {
-id             String   @id @default(uuid())
-name           String
-specialization String
-qualification  String?
-phone          String
-email          String
-bio            String?
-imageUrls      String[]
-active         Boolean  @default(true)
-createdAt      DateTime @default(now())
-updatedAt      DateTime @updatedAt
+  id             String   @id @default(uuid())
+  name           String
+  specialization String
+  qualification  String?
+  phone          String
+  email          String
+  bio            String?
+  imageUrls      String[]
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-messages     PatientMessage[]
-ratings      DoctorRating[]
-appointments Appointment[]
+  messages     PatientMessage[]
+  ratings      DoctorRating[]
+  appointments Appointment[]
 
-@@map("doctors")
+  @@map("doctors")
 }
 
 model PatientMessage {
-id          String   @id @default(uuid())
-doctorId    String
-doctorName  String
-messageText String
-date        String
-createdAt   DateTime @default(now())
+  id          String   @id @default(uuid())
+  doctorId    String
+  doctorName  String
+  messageText String
+  date        String
+  createdAt   DateTime @default(now())
 
-doctor Doctor @relation(
-fields: [doctorId],
-references: [id],
-onDelete: Cascade
-)
+  doctor Doctor @relation(
+    fields: [doctorId],
+    references: [id],
+    onDelete: Cascade
+  )
 
-@@map("patient_messages")
+  @@map("patient_messages")
 }
 
 model DoctorRating {
-id         String   @id @default(uuid())
-doctorId   String
-doctorName String
-rating     Int
-date       String
-createdAt  DateTime @default(now())
+  id         String   @id @default(uuid())
+  doctorId   String
+  doctorName String
+  rating     Int
+  date       String
+  createdAt  DateTime @default(now())
 
-doctor Doctor @relation(
-fields: [doctorId],
-references: [id],
-onDelete: Cascade
-)
+  doctor Doctor @relation(
+    fields: [doctorId],
+    references: [id],
+    onDelete: Cascade
+  )
 
-@@map("doctor_ratings")
+  @@map("doctor_ratings")
 }
 
 model Appointment {
-id String @id @default(cuid())
+  id String @id @default(cuid())
 
-patientId    String?
-patientName  String
-patientPhone String
-patientEmail String?
+  patientId    String?
+  patientName  String
+  patientPhone String
+  patientEmail String?
 
-doctorId   String?
-department String?
-service    String?
+  doctorId   String?
+  department String?
+  service    String?
 
-appointmentDate DateTime
-appointmentTime String?
+  appointmentDate DateTime
+  appointmentTime String?
 
-reason String?
-notes  String?
+  reason String?
+  notes  String?
 
-status   String @default("PENDING")
-priority String @default("NORMAL")
+  status   String @default("PENDING")
+  priority String @default("NORMAL")
 
-createdAt DateTime @default(now())
-updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-doctor Doctor? @relation(
-fields: [doctorId],
-references: [id],
-onDelete: SetNull
-)
+  doctor Doctor? @relation(
+    fields: [doctorId],
+    references: [id],
+    onDelete: SetNull
+  )
 
-@@index([doctorId])
-@@index([patientPhone])
-@@index([appointmentDate])
-@@index([status])
-@@map("appointments")
+  @@index([doctorId])
+  @@index([patientPhone])
+  @@index([appointmentDate])
+  @@index([status])
+  @@map("appointments")
 }
