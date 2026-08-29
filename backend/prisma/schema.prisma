@@ -69,6 +69,22 @@ model DoctorRating {
   @@map("doctor_ratings")
 }
 
+model GalleryItem {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  type        String   @default("image")
+  url         String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([type])
+  @@index([createdAt])
+  @@map("gallery_items")
+}
+
 model Appointment {
   id String @id @default(cuid())
 

@@ -3,6 +3,7 @@ import cors from "cors";
 import path from "path";
 
 import doctorManagementRouter from "./routes/doctorManagement.js";
+import galleryManagerRouter from "./routes/gallerymanager.js";
 import appointmentsRouter from "./routes/appointments.js";
 
 const app = express();
@@ -24,15 +25,6 @@ app.use(express.json());
    STATIC UPLOADS
 ========================================================= */
 
-/*
- * Doctor images are stored in:
- *
- * backend/uploads/doctors
- *
- * They are publicly accessible through:
- *
- * http://localhost:5000/uploads/doctors/filename.jpg
- */
 
 const uploadsDirectory = path.resolve(
   process.cwd(),
@@ -79,6 +71,12 @@ app.use(
   "/api/appointments",
   appointmentsRouter
 );
+
+/* =========================================================
+   GALLERY
+========================================================= */
+
+app.use("/api/gallery", galleryManagerRouter);
 
 /* =========================================================
    404 HANDLER
