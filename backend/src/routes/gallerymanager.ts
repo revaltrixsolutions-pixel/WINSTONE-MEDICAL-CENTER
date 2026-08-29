@@ -6,7 +6,6 @@ import path from "path";
 import fs from "fs";
 
 const router = Router();
-
 const prisma = new PrismaClient();
 
 /* =========================================================
@@ -36,29 +35,16 @@ if (!fs.existsSync(uploadDirectory)) {
    ========================================================= */
 
 const storage = multer.diskStorage({
-  destination: (
-    _req,
-    _file,
-    cb,
-  ) => {
+  destination: (_req, _file, cb) => {
     cb(null, uploadDirectory);
   },
 
-  filename: (
-    _req,
-    file,
-    cb,
-  ) => {
-    const extension = path.extname(
-      file.originalname,
-    );
+  filename: (_req, file, cb) => {
+    const extension = path.extname(file.originalname);
 
     const baseName = path
-      .basename(
-        file.originalname,
-        extension,
-      )
-      .replace(/[^a-zA-Z0-9-_]/g, "-")
+      .basename(file.originalname, extension)
+      .replace(/[^a-zA-Z0-9_-]/g, "-")
       .toLowerCase();
 
     const uniqueName = `${Date.now()}-${baseName}${extension}`;
@@ -74,11 +60,7 @@ const upload = multer({
     fileSize: 10 * 1024 * 1024,
   },
 
-  fileFilter: (
-    _req,
-    file,
-    cb,
-  ) => {
+  fileFilter: (_req, file, cb) => {
     const allowedImages = [
       "image/jpeg",
       "image/png",
@@ -112,9 +94,7 @@ const upload = multer({
    HELPERS
    ========================================================= */
 
-function normalizeType(
-  value: unknown,
-): GalleryType {
+function normalizeType(value: unknown): GalleryType {
   if (
     value === "image" ||
     value === "video" ||
@@ -147,9 +127,7 @@ function normalizeBoolean(
   return defaultValue;
 }
 
-function normalizeYouTubeUrl(
-  value: string,
-): string {
+function normalizeYouTubeUrl(value: string): string {
   const input = value.trim();
 
   if (!input) {
@@ -158,39 +136,27 @@ function normalizeYouTubeUrl(
 
   try {
     const parsed = new URL(input);
-
-    const hostname =
-      parsed.hostname.toLowerCase();
+    const hostname = parsed.hostname.toLowerCase();
 
     if (
       hostname === "youtube.com" ||
       hostname === "www.youtube.com" ||
       hostname === "m.youtube.com"
     ) {
-      const videoId =
-        parsed.searchParams.get("v");
+      const videoId = parsed.searchParams.get("v");
 
       if (videoId) {
         return `https://www.youtube.com/embed/${videoId}`;
       }
 
-      if (
-        parsed.pathname.startsWith(
-          "/embed/",
-        )
-      ) {
+      if (parsed.pathname.startsWith("/embed/")) {
         return input;
       }
 
-      if (
-        parsed.pathname.startsWith(
-          "/shorts/",
-        )
-      ) {
-        const videoId =
-          parsed.pathname
-            .split("/shorts/")[1]
-            ?.split("/")[0];
+      if (parsed.pathname.startsWith("/shorts/")) {
+        const videoId = parsed.pathname
+          .split("/shorts/")[1]
+          ?.split("/")[0];
 
         if (videoId) {
           return `https://www.youtube.com/embed/${videoId}`;
@@ -198,13 +164,10 @@ function normalizeYouTubeUrl(
       }
     }
 
-    if (
-      hostname === "youtu.be"
-    ) {
-      const videoId =
-        parsed.pathname
-          .replace(/^\/+/, "")
-          .split("/")[0];
+    if (hostname === "youtu.be") {
+      const videoId = parsed.pathname
+        .replace(/^\/+/, "")
+        .split("/")[0];
 
       if (videoId) {
         return `https://www.youtube.com/embed/${videoId}`;
@@ -221,14 +184,18 @@ function getPublicFileUrl(
   req: Request,
   filename: string,
 ): string {
+  const forwardedProto = req.headers["x-forwarded-proto"];
+
   const protocol =
-    req.headers["x-forwarded-proto"] ||
-    req.protocol;
+    typeof forwardedProto === "string"
+      ? forwardedProto.split(",")[0].trim()
+      : req.protocol;
 
-  const host =
-    req.get("host");
+  const host = req.get("host");
 
-  return `${protocol}://${host}/uploads/gallery/${encodeURIComponent(filename)}`;
+  return `${protocol}://${host}/uploads/gallery/${encodeURIComponent(
+    filename,
+  )}`;
 }
 
 function deletePhysicalFile(
@@ -241,10 +208,9 @@ function deletePhysicalFile(
   try {
     const parsed = new URL(fileUrl);
 
-    const pathname =
-      decodeURIComponent(
-        parsed.pathname,
-      );
+    const pathname = decodeURIComponent(
+      parsed.pathname,
+    );
 
     if (
       !pathname.startsWith(
@@ -254,18 +220,14 @@ function deletePhysicalFile(
       return;
     }
 
-    const filename = path.basename(
-      pathname,
-    );
+    const filename = path.basename(pathname);
 
     const fullPath = path.join(
       uploadDirectory,
       filename,
     );
 
-    if (
-      fs.existsSync(fullPath)
-    ) {
+    if (fs.existsSync(fullPath)) {
       fs.unlinkSync(fullPath);
     }
   } catch (error) {
@@ -278,6 +240,7 @@ function deletePhysicalFile(
 
 /* =========================================================
    GET ALL GALLERY ITEMS
+
    GET /api/gallery
    GET /api/gallery?active=true
    ========================================================= */
@@ -289,8 +252,7 @@ router.get(
     res: Response,
   ) => {
     try {
-      const activeFilter =
-        req.query.active;
+      const activeFilter = req.query.active;
 
       const where =
         activeFilter === "true"
@@ -328,6 +290,7 @@ router.get(
 
 /* =========================================================
    GET ONE
+
    GET /api/gallery/:id
    ========================================================= */
 
@@ -376,6 +339,7 @@ router.get(
 
 /* =========================================================
    CREATE GALLERY ITEM
+
    POST /api/gallery
    ========================================================= */
 
@@ -430,8 +394,7 @@ router.post(
             title: title.trim(),
 
             description:
-              typeof description ===
-                "string" &&
+              typeof description === "string" &&
               description.trim()
                 ? description.trim()
                 : null,
@@ -440,11 +403,10 @@ router.post(
 
             url: galleryUrl,
 
-            isActive:
-              normalizeBoolean(
-                isActive,
-                true,
-              ),
+            isActive: normalizeBoolean(
+              isActive,
+              true,
+            ),
           },
         });
 
@@ -471,6 +433,7 @@ router.post(
 
 /* =========================================================
    UPLOAD FILE
+
    POST /api/gallery/upload
    ========================================================= */
 
@@ -532,11 +495,10 @@ router.post(
 
             url: fileUrl,
 
-            isActive:
-              normalizeBoolean(
-                isActive,
-                true,
-              ),
+            isActive: normalizeBoolean(
+              isActive,
+              true,
+            ),
           },
         });
 
@@ -556,13 +518,9 @@ router.post(
             );
 
           if (
-            fs.existsSync(
-              uploadedFile,
-            )
+            fs.existsSync(uploadedFile)
           ) {
-            fs.unlinkSync(
-              uploadedFile,
-            );
+            fs.unlinkSync(uploadedFile);
           }
         } catch {
           // Ignore cleanup failure.
@@ -587,6 +545,7 @@ router.post(
 
 /* =========================================================
    UPDATE GALLERY ITEM
+
    PATCH /api/gallery/:id
    ========================================================= */
 
@@ -630,9 +589,7 @@ router.patch(
         isActive?: boolean;
       } = {};
 
-      if (
-        typeof title === "string"
-      ) {
+      if (typeof title === "string") {
         if (!title.trim()) {
           return res.status(400).json({
             success: false,
@@ -641,34 +598,23 @@ router.patch(
           });
         }
 
-        data.title =
-          title.trim();
+        data.title = title.trim();
       }
 
-      if (
-        description === null
-      ) {
-        data.description =
-          null;
+      if (description === null) {
+        data.description = null;
       } else if (
-        typeof description ===
-        "string"
+        typeof description === "string"
       ) {
         data.description =
-          description.trim() ||
-          null;
+          description.trim() || null;
       }
 
-      if (
-        type !== undefined
-      ) {
-        data.type =
-          normalizeType(type);
+      if (type !== undefined) {
+        data.type = normalizeType(type);
       }
 
-      if (
-        typeof url === "string"
-      ) {
+      if (typeof url === "string") {
         if (!url.trim()) {
           return res.status(400).json({
             success: false,
@@ -678,20 +624,15 @@ router.patch(
         }
 
         const nextType =
-          data.type ||
-          existing.type;
+          data.type || existing.type;
 
         data.url =
           nextType === "embed"
-            ? normalizeYouTubeUrl(
-                url,
-              )
+            ? normalizeYouTubeUrl(url)
             : url.trim();
       }
 
-      if (
-        isActive !== undefined
-      ) {
+      if (isActive !== undefined) {
         data.isActive =
           normalizeBoolean(
             isActive,
@@ -730,6 +671,7 @@ router.patch(
 
 /* =========================================================
    DELETE GALLERY ITEM
+
    DELETE /api/gallery/:id
    ========================================================= */
 
@@ -763,9 +705,7 @@ router.delete(
         },
       });
 
-      deletePhysicalFile(
-        existing.url,
-      );
+      deletePhysicalFile(existing.url);
 
       return res.status(200).json({
         success: true,
@@ -808,8 +748,7 @@ router.use(
     ) {
       return res.status(400).json({
         success: false,
-        message:
-          error.message,
+        message: error.message,
       });
     }
 

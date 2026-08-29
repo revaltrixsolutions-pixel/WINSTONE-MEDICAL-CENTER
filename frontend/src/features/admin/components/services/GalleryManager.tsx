@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+
 import {
   Trash2,
   Plus,
@@ -7,18 +8,39 @@ import {
   Home,
   Loader2,
 } from "lucide-react";
+
 import { Link } from "react-router-dom";
 
 interface GalleryItem {
   id: string;
   title: string;
-  description?: string;
+  description?: string | null;
   type: "image" | "video" | "embed";
   url: string;
   isActive: boolean;
 }
 
-const API_BASE_URL = "/api/gallery";
+/*
+|--------------------------------------------------------------------------
+| API BASE URL
+|--------------------------------------------------------------------------
+|
+| Uses VITE_API_URL so the frontend talks directly to the Render backend
+| in production instead of sending /api/gallery to Vercel.
+|
+| Local .env:
+| VITE_API_URL=http://localhost:5000/api
+|
+| Vercel Environment Variable:
+| VITE_API_URL=https://winstone-medical-center-1.onrender.com/api
+|
+*/
+
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL?.trim() ||
+  "http://localhost:5000/api";
+
+const GALLERY_API_URL = `${API_BASE_URL.replace(/\/+$/, "")}/gallery`;
 
 export default function GalleryManager() {
   const [items, setItems] = useState<GalleryItem[]>([]);
@@ -29,6 +51,32 @@ export default function GalleryManager() {
   const [description, setDescription] = useState("");
   const [type, setType] = useState<"image" | "video" | "embed">("image");
   const [url, setUrl] = useState("");
+
+  // =========================================================
+  // HELPER: SAFELY READ JSON
+  // =========================================================
+
+  const readResponse = async (res: Response): Promise<any> => {
+    const contentType = res.headers.get("content-type") || "";
+
+    if (contentType.includes("application/json")) {
+      return res.json().catch(() => null);
+    }
+
+    const text = await res.text().catch(() => "");
+
+    if (
+      text.toLowerCase().includes("<!doctype") ||
+      text.toLowerCase().includes("<html")
+    ) {
+      throw new Error(
+        `Gallery API returned HTML instead of JSON (${res.status}). ` +
+          `Make sure VITE_API_URL points to the Render backend: ${API_BASE_URL}`,
+      );
+    }
+
+    return null;
+  };
 
   // =========================================================
   // 1. FETCH GALLERY ITEMS FROM DATABASE
@@ -42,23 +90,30 @@ export default function GalleryManager() {
     try {
       setLoading(true);
 
-      const res = await fetch(API_BASE_URL, {
+      const res = await fetch(GALLERY_API_URL, {
         method: "GET",
         headers: {
           Accept: "application/json",
         },
       });
 
+      const data = await readResponse(res);
+
       if (!res.ok) {
-        throw new Error(`Failed to fetch gallery items: ${res.status}`);
+        throw new Error(
+          data?.message ||
+            data?.error ||
+            `Failed to fetch gallery items: ${res.status}`,
+        );
       }
 
-      const data = await res.json();
+      /*
+       * Support:
+       * [items]
+       * { items: [...] }
+       * { data: [...] }
+       */
 
-      // Support both:
-      // [items]
-      // { items: [...] }
-      // { data: [...] }
       const galleryItems = Array.isArray(data)
         ? data
         : Array.isArray(data?.items)
@@ -70,8 +125,14 @@ export default function GalleryManager() {
       setItems(galleryItems);
     } catch (err) {
       console.error("Error loading gallery items from DB:", err);
+
       setItems([]);
-      alert("Unable to load gallery items from the database.");
+
+      alert(
+        err instanceof Error
+          ? err.message
+          : "Unable to load gallery items from the database.",
+      );
     } finally {
       setLoading(false);
     }
@@ -82,13 +143,14 @@ export default function GalleryManager() {
   //    STORES RECORD THROUGH DATABASE API
   // =========================================================
 
-  const handleAddMedia = async (e: React.FormEvent) => {
+  const handleAddMedia = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (submitting) return;
 
     const cleanTitle = title.trim();
     const cleanDescription = description.trim();
+
     let processedUrl = url.trim();
 
     if (!cleanTitle) {
@@ -101,14 +163,20 @@ export default function GalleryManager() {
       return;
     }
 
+    // =======================================================
     // Convert YouTube URLs to embed URLs
+    // =======================================================
+
     if (type === "embed") {
       try {
         const parsedUrl = new URL(processedUrl);
+        const hostname = parsedUrl.hostname.toLowerCase();
 
         // youtube.com/watch?v=VIDEO_ID
         if (
-          parsedUrl.hostname.includes("youtube.com") &&
+          (hostname === "youtube.com" ||
+            hostname === "www.youtube.com" ||
+            hostname === "m.youtube.com") &&
           parsedUrl.searchParams.get("v")
         ) {
           const videoId = parsedUrl.searchParams.get("v");
@@ -119,7 +187,10 @@ export default function GalleryManager() {
         }
 
         // youtu.be/VIDEO_ID
-        else if (parsedUrl.hostname === "youtu.be") {
+        else if (
+          hostname === "youtu.be" ||
+          hostname === "www.youtu.be"
+        ) {
           const videoId = parsedUrl.pathname
             .replace(/^\/+/, "")
             .split("/")[0];
@@ -139,9 +210,14 @@ export default function GalleryManager() {
             processedUrl = `https://www.youtube.com/embed/${videoId}`;
           }
         }
+
+        // Already an embed URL
+        else if (parsedUrl.pathname.startsWith("/embed/")) {
+          processedUrl = parsedUrl.toString();
+        }
       } catch {
-        // If the URL is not a valid URL, leave it untouched.
-        // The backend will perform its own validation.
+        // Leave invalid URL untouched.
+        // Backend can perform its own validation.
       }
     }
 
@@ -156,7 +232,7 @@ export default function GalleryManager() {
     try {
       setSubmitting(true);
 
-      const res = await fetch(API_BASE_URL, {
+      const res = await fetch(GALLERY_API_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -165,7 +241,7 @@ export default function GalleryManager() {
         body: JSON.stringify(payload),
       });
 
-      const responseData = await res.json().catch(() => null);
+      const responseData = await readResponse(res);
 
       if (!res.ok) {
         throw new Error(
@@ -181,11 +257,16 @@ export default function GalleryManager() {
         responseData;
 
       if (!newItem?.id) {
-        throw new Error("The server did not return the saved gallery item.");
+        throw new Error(
+          "The server did not return the saved gallery item.",
+        );
       }
 
-      // The database is the source of truth.
-      setItems((previousItems) => [newItem, ...previousItems]);
+      // Database is the source of truth.
+      setItems((previousItems) => [
+        newItem,
+        ...previousItems,
+      ]);
 
       // Clear form after successful database save.
       setTitle("");
@@ -193,7 +274,7 @@ export default function GalleryManager() {
       setUrl("");
       setType("image");
 
-      // Reset file input if present.
+      // Reset file input.
       const fileInput = document.getElementById(
         "gallery-file-upload",
       ) as HTMLInputElement | null;
@@ -225,7 +306,9 @@ export default function GalleryManager() {
   // until handleAddMedia sends it to the database.
   // =========================================================
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = e.target.files?.[0];
 
     if (!file) return;
@@ -248,8 +331,12 @@ export default function GalleryManager() {
     const isVideo = allowedVideoTypes.includes(file.type);
 
     if (!isImage && !isVideo) {
-      alert("Please select a JPG, PNG, WEBP, GIF, MP4, WEBM, or OGG file.");
+      alert(
+        "Please select a JPG, PNG, WEBP, GIF, MP4, WEBM, or OGG file.",
+      );
+
       e.target.value = "";
+
       return;
     }
 
@@ -257,8 +344,12 @@ export default function GalleryManager() {
     const maxFileSize = 5 * 1024 * 1024;
 
     if (file.size > maxFileSize) {
-      alert("The selected file is too large. Maximum size is 5 MB.");
+      alert(
+        "The selected file is too large. Maximum size is 5 MB.",
+      );
+
       e.target.value = "";
+
       return;
     }
 
@@ -283,6 +374,7 @@ export default function GalleryManager() {
 
     reader.onerror = () => {
       console.error("Failed to read selected file.");
+
       alert("Unable to read the selected file.");
     };
 
@@ -301,18 +393,21 @@ export default function GalleryManager() {
     try {
       const newStatus = !currentStatus;
 
-      const res = await fetch(`${API_BASE_URL}/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
+      const res = await fetch(
+        `${GALLERY_API_URL}/${encodeURIComponent(id)}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            isActive: newStatus,
+          }),
         },
-        body: JSON.stringify({
-          isActive: newStatus,
-        }),
-      });
+      );
 
-      const responseData = await res.json().catch(() => null);
+      const responseData = await readResponse(res);
 
       if (!res.ok) {
         throw new Error(
@@ -351,19 +446,26 @@ export default function GalleryManager() {
   // =========================================================
 
   const deleteItem = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this media item?")) {
+    if (
+      !confirm(
+        "Are you sure you want to delete this media item?",
+      )
+    ) {
       return;
     }
 
     try {
-      const res = await fetch(`${API_BASE_URL}/${id}`, {
-        method: "DELETE",
-        headers: {
-          Accept: "application/json",
+      const res = await fetch(
+        `${GALLERY_API_URL}/${encodeURIComponent(id)}`,
+        {
+          method: "DELETE",
+          headers: {
+            Accept: "application/json",
+          },
         },
-      });
+      );
 
-      const responseData = await res.json().catch(() => null);
+      const responseData = await readResponse(res);
 
       if (!res.ok) {
         throw new Error(
@@ -396,6 +498,7 @@ export default function GalleryManager() {
   return (
     <div className="space-y-8">
       {/* Top Navigation */}
+
       <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
         <div className="flex items-center gap-3">
           <Link
@@ -417,6 +520,7 @@ export default function GalleryManager() {
       </div>
 
       {/* Add Form */}
+
       <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xl">
         <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
           <Upload className="text-blue-600" size={20} />
@@ -428,6 +532,7 @@ export default function GalleryManager() {
           className="grid grid-cols-1 md:grid-cols-2 gap-4"
         >
           {/* Title */}
+
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
               Title *
@@ -445,6 +550,7 @@ export default function GalleryManager() {
           </div>
 
           {/* Media Type */}
+
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
               Media Source Type
@@ -454,7 +560,10 @@ export default function GalleryManager() {
               value={type}
               onChange={(e) =>
                 setType(
-                  e.target.value as "image" | "video" | "embed",
+                  e.target.value as
+                    | "image"
+                    | "video"
+                    | "embed",
                 )
               }
               disabled={submitting}
@@ -475,6 +584,7 @@ export default function GalleryManager() {
           </div>
 
           {/* File Upload */}
+
           <div className="md:col-span-2 rounded-2xl border-2 border-dashed border-slate-300 p-4 bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600">
@@ -487,7 +597,8 @@ export default function GalleryManager() {
                 </p>
 
                 <p className="text-xs text-slate-500">
-                  Supports JPG, PNG, WEBP, GIF, MP4, WEBM up to 5 MB
+                  Supports JPG, PNG, WEBP, GIF, MP4, WEBM up to
+                  5 MB
                 </p>
               </div>
             </div>
@@ -503,6 +614,7 @@ export default function GalleryManager() {
           </div>
 
           {/* URL */}
+
           <div className="md:col-span-2">
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
               {type === "embed"
@@ -532,6 +644,7 @@ export default function GalleryManager() {
           </div>
 
           {/* Description */}
+
           <div className="md:col-span-2">
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
               Description (Optional)
@@ -548,6 +661,7 @@ export default function GalleryManager() {
           </div>
 
           {/* Save */}
+
           <div className="md:col-span-2">
             <button
               type="submit"
@@ -574,6 +688,7 @@ export default function GalleryManager() {
       </div>
 
       {/* Gallery Media Grid */}
+
       <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xl">
         <h3 className="text-lg font-bold text-slate-900 mb-4">
           Manage Gallery Media ({items.length})
@@ -610,6 +725,7 @@ export default function GalleryManager() {
                 className="rounded-2xl border border-slate-200 overflow-hidden shadow-sm flex flex-col justify-between"
               >
                 {/* Preview */}
+
                 <div className="relative h-48 bg-slate-100 flex items-center justify-center overflow-hidden">
                   {item.type === "image" ? (
                     <img
@@ -636,6 +752,7 @@ export default function GalleryManager() {
                   )}
 
                   {/* Status */}
+
                   <span
                     className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-bold ${
                       item.isActive
@@ -647,12 +764,14 @@ export default function GalleryManager() {
                   </span>
 
                   {/* Type */}
+
                   <span className="absolute bottom-3 left-3 px-2.5 py-1 rounded-lg text-[10px] font-mono uppercase bg-slate-900/80 text-cyan-300 backdrop-blur-md">
                     {item.type}
                   </span>
                 </div>
 
                 {/* Information */}
+
                 <div className="p-4 space-y-2 flex-1 flex flex-col justify-between">
                   <div>
                     <h4 className="font-bold text-slate-900 text-sm">
@@ -666,6 +785,7 @@ export default function GalleryManager() {
                   </div>
 
                   {/* Actions */}
+
                   <div className="flex items-center justify-between pt-4 border-t border-slate-100">
                     <button
                       type="button"
