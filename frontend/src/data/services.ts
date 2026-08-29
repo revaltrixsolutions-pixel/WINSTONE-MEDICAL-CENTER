@@ -9,124 +9,165 @@ export interface MedicalService {
   active: boolean;
 }
 
-export const defaultServices: MedicalService[] = [
-  {
-    id: "general-consultation",
-    name: "General Consultation",
-    shortDescription: "Professional medical consultation, diagnosis, and treatment for all ages.",
-    description:
-      "Professional medical consultation, diagnosis, treatment, and health guidance for patients of all ages. Our experienced practitioners provide comprehensive health evaluations and personalized care plans.",
-    icon: "Stethoscope",
-    imageUrl: "",
-    imageUrls: [],
-    active: true,
-  },
-  {
-    id: "laboratory-services",
-    name: "Laboratory Services",
-    shortDescription: "Reliable laboratory testing and diagnostic services.",
-    description:
-      "Reliable laboratory testing and diagnostic services to support accurate medical assessment. Equipped with modern technology to deliver prompt and precise results.",
-    icon: "TestTube",
-    imageUrl: "",
-    imageUrls: [],
-    active: true,
-  },
-  {
-    id: "pharmacy",
-    name: "Pharmacy",
-    shortDescription: "Convenient access to prescribed medicines and professional guidance.",
-    description:
-      "Convenient access to prescribed medicines and professional guidance on safe medication use. Our pharmacy ensures high-quality pharmaceutical products and expert consultations.",
-    icon: "Pill",
-    imageUrl: "",
-    imageUrls: [],
-    active: true,
-  },
-  {
-    id: "maternity-care",
-    name: "Maternity Care",
-    shortDescription: "Compassionate maternity support through pregnancy and delivery.",
-    description:
-      "Compassionate maternity services supporting mothers throughout pregnancy, delivery, and postnatal care. Dedicated to ensuring a safe and nurturing journey for mother and child.",
-    icon: "Baby",
-    imageUrl: "",
-    imageUrls: [],
-    active: true,
-  },
-  {
-    id: "pediatric-care",
-    name: "Pediatric Care",
-    shortDescription: "Dedicated healthcare services focused on the wellbeing of children.",
-    description:
-      "Dedicated healthcare services focused on the wellbeing, growth, and development of children. We offer routine vaccinations, check-ups, and specialized pediatric treatment.",
-    icon: "HeartPulse",
-    imageUrl: "",
-    imageUrls: [],
-    active: true,
-  },
-  {
-    id: "emergency-care",
-    name: "Emergency Care",
-    shortDescription: "Prompt medical attention for urgent illnesses and injuries.",
-    description:
-      "Prompt medical attention for urgent illnesses, injuries, and other emergency healthcare needs. Available around the clock with a specialized team ready to respond swiftly.",
-    icon: "Siren",
-    imageUrl: "",
-    imageUrls: [],
-    active: true,
-  },
-];
+export type MedicalServicePayload = {
+  name: string;
+  shortDescription: string;
+  description: string;
+  icon: string;
+  imageUrls: string[];
+};
 
-export const SERVICES_STORAGE_KEY = "winston_medical_services";
+const API_URL = "/api/services";
 
-export function getServices(): MedicalService[] {
-  if (typeof window === "undefined") {
-    return defaultServices;
-  }
+async function parseApiResponse<T>(response: Response): Promise<T> {
+  const rawResponse = await response.text();
 
-  try {
-    const saved = localStorage.getItem(SERVICES_STORAGE_KEY);
+  let data: unknown = null;
 
-    if (!saved) {
-      localStorage.setItem(
-        SERVICES_STORAGE_KEY,
-        JSON.stringify(defaultServices),
+  if (rawResponse.trim()) {
+    try {
+      data = JSON.parse(rawResponse);
+    } catch {
+      throw new Error(
+        `Invalid server response (${response.status}): ${rawResponse.slice(0, 250)}`,
       );
-
-      return defaultServices;
     }
-
-    const parsed = JSON.parse(saved);
-
-    if (!Array.isArray(parsed)) {
-      return defaultServices;
-    }
-
-    // Ensure backwards compatibility and correct array structure for imageUrls
-    return parsed.map((service) => ({
-      ...service,
-      imageUrls: Array.isArray(service.imageUrls)
-        ? service.imageUrls
-        : service.imageUrl
-        ? [service.imageUrl]
-        : [],
-    }));
-  } catch {
-    return defaultServices;
   }
+
+  if (!response.ok) {
+    const message =
+      data &&
+      typeof data === "object" &&
+      "message" in data &&
+      typeof data.message === "string"
+        ? data.message
+        : `Request failed: ${response.status} ${response.statusText}`;
+
+    throw new Error(message);
+  }
+
+  return data as T;
 }
 
-export function saveServices(services: MedicalService[]) {
-  localStorage.setItem(
-    SERVICES_STORAGE_KEY,
-    JSON.stringify(services),
-  );
+function normalizeService(service: MedicalService): MedicalService {
+  const imageUrls = Array.isArray(service.imageUrls)
+    ? service.imageUrls
+    : service.imageUrl
+      ? [service.imageUrl]
+      : [];
+
+  return {
+    ...service,
+    imageUrls,
+    imageUrl: imageUrls[0] || "",
+    active: Boolean(service.active),
+  };
 }
 
-export function resetServices() {
-  localStorage.setItem(
-    SERVICES_STORAGE_KEY,
-    JSON.stringify(defaultServices),
-  );
+export async function getServices(
+  activeOnly = false,
+): Promise<MedicalService[]> {
+  const query = activeOnly ? "?active=true" : "";
+
+  const response = await fetch(`${API_URL}${query}`, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  const services = await parseApiResponse<MedicalService[]>(response);
+
+  return services.map(normalizeService);
+}
+
+export async function getServiceById(
+  id: string,
+): Promise<MedicalService> {
+  const response = await fetch(`${API_URL}/${id}`, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  const service = await parseApiResponse<MedicalService>(response);
+
+  return normalizeService(service);
+}
+
+export async function createService(
+  service: MedicalServicePayload,
+): Promise<MedicalService> {
+  const response = await fetch(API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      name: service.name.trim(),
+      shortDescription: service.shortDescription.trim(),
+      description: service.description.trim(),
+      icon: service.icon,
+      imageUrls: service.imageUrls.slice(0, 5),
+    }),
+  });
+
+  const createdService = await parseApiResponse<MedicalService>(response);
+
+  return normalizeService(createdService);
+}
+
+export async function updateService(
+  id: string,
+  service: MedicalServicePayload,
+): Promise<MedicalService> {
+  const response = await fetch(`${API_URL}/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      name: service.name.trim(),
+      shortDescription: service.shortDescription.trim(),
+      description: service.description.trim(),
+      icon: service.icon,
+      imageUrls: service.imageUrls.slice(0, 5),
+    }),
+  });
+
+  const updatedService = await parseApiResponse<MedicalService>(response);
+
+  return normalizeService(updatedService);
+}
+
+export async function setServiceVisibility(
+  id: string,
+  active: boolean,
+): Promise<MedicalService> {
+  const response = await fetch(`${API_URL}/${id}/visibility`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({ active }),
+  });
+
+  const updatedService = await parseApiResponse<MedicalService>(response);
+
+  return normalizeService(updatedService);
+}
+
+export async function deleteService(id: string): Promise<void> {
+  const response = await fetch(`${API_URL}/${id}`, {
+    method: "DELETE",
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  await parseApiResponse<{ message: string }>(response);
 }
