@@ -79,6 +79,7 @@ app.use(
 ========================================================= */
 
 app.use("/api/gallery", galleryManagerRouter);
+app.use("/api/services", servicesManagerRouter);
 
 /* =========================================================
    404 HANDLER
@@ -138,5 +139,7 @@ app.listen(PORT, () => {
   console.log("==============================================");
   console.log("");
 });
+
+
 
 

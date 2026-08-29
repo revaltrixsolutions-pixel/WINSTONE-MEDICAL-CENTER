@@ -42,6 +42,7 @@ app.use("/api/appointments", appointmentsRouter);
    GALLERY
 ========================================================= */
 app.use("/api/gallery", galleryManagerRouter);
+app.use("/api/services", servicesManagerRouter);
 /* =========================================================
    404 HANDLER
 ========================================================= */
