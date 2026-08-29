@@ -5,6 +5,7 @@ import path from "path";
 import doctorManagementRouter from "./routes/doctorManagement.js";
 import galleryManagerRouter from "./routes/gallerymanager.js";
 import appointmentsRouter from "./routes/appointments.js";
+import servicesManagerRouter from "./routes/servicesmanager.js";
 
 const app = express();
 
@@ -137,3 +138,5 @@ app.listen(PORT, () => {
   console.log("==============================================");
   console.log("");
 });
+
+

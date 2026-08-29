@@ -39,8 +39,8 @@ export default function ServicesPage() {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   useEffect(() => {
-    const loadServices = () => {
-      setServices(getServices().filter((service) => service.active));
+    const loadServices = async () => {
+      setServices((await getServices()).filter((service: MedicalService) => service.active));
     };
 
     loadServices();
@@ -384,3 +384,4 @@ export default function ServicesPage() {
     </section>
   );
 }
+

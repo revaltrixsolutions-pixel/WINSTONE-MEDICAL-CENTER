@@ -1,4 +1,4 @@
-import { Router, Request, Response } from "express";
+import { Router } from "express";
 import { PrismaClient } from "../../generated/prisma/index.js";
 import multer from "multer";
 import path from "path";
@@ -25,7 +25,7 @@ const storage = multer.diskStorage({
         const extension = path.extname(file.originalname);
         const baseName = path
             .basename(file.originalname, extension)
-            .replace(/[^a-zA-Z0-9-_]/g, "-")
+            .replace(/[^a-zA-Z0-9_-]/g, "-")
             .toLowerCase();
         const uniqueName = `${Date.now()}-${baseName}${extension}`;
         cb(null, uniqueName);
@@ -123,8 +123,10 @@ function normalizeYouTubeUrl(value) {
     return input;
 }
 function getPublicFileUrl(req, filename) {
-    const protocol = req.headers["x-forwarded-proto"] ||
-        req.protocol;
+    const forwardedProto = req.headers["x-forwarded-proto"];
+    const protocol = typeof forwardedProto === "string"
+        ? forwardedProto.split(",")[0].trim()
+        : req.protocol;
     const host = req.get("host");
     return `${protocol}://${host}/uploads/gallery/${encodeURIComponent(filename)}`;
 }
@@ -150,6 +152,7 @@ function deletePhysicalFile(fileUrl) {
 }
 /* =========================================================
    GET ALL GALLERY ITEMS
+
    GET /api/gallery
    GET /api/gallery?active=true
    ========================================================= */
@@ -182,6 +185,7 @@ router.get("/", async (req, res) => {
 });
 /* =========================================================
    GET ONE
+
    GET /api/gallery/:id
    ========================================================= */
 router.get("/:id", async (req, res) => {
@@ -213,6 +217,7 @@ router.get("/:id", async (req, res) => {
 });
 /* =========================================================
    CREATE GALLERY ITEM
+
    POST /api/gallery
    ========================================================= */
 router.post("/", async (req, res) => {
@@ -239,8 +244,7 @@ router.post("/", async (req, res) => {
         const item = await prisma.galleryItem.create({
             data: {
                 title: title.trim(),
-                description: typeof description ===
-                    "string" &&
+                description: typeof description === "string" &&
                     description.trim()
                     ? description.trim()
                     : null,
@@ -265,6 +269,7 @@ router.post("/", async (req, res) => {
 });
 /* =========================================================
    UPLOAD FILE
+
    POST /api/gallery/upload
    ========================================================= */
 router.post("/upload", upload.single("file"), async (req, res) => {
@@ -327,6 +332,7 @@ router.post("/upload", upload.single("file"), async (req, res) => {
 });
 /* =========================================================
    UPDATE GALLERY ITEM
+
    PATCH /api/gallery/:id
    ========================================================= */
 router.patch("/:id", async (req, res) => {
@@ -352,22 +358,17 @@ router.patch("/:id", async (req, res) => {
                     message: "Gallery title cannot be empty.",
                 });
             }
-            data.title =
-                title.trim();
+            data.title = title.trim();
         }
         if (description === null) {
-            data.description =
-                null;
+            data.description = null;
         }
-        else if (typeof description ===
-            "string") {
+        else if (typeof description === "string") {
             data.description =
-                description.trim() ||
-                    null;
+                description.trim() || null;
         }
         if (type !== undefined) {
-            data.type =
-                normalizeType(type);
+            data.type = normalizeType(type);
         }
         if (typeof url === "string") {
             if (!url.trim()) {
@@ -376,8 +377,7 @@ router.patch("/:id", async (req, res) => {
                     message: "Gallery URL cannot be empty.",
                 });
             }
-            const nextType = data.type ||
-                existing.type;
+            const nextType = data.type || existing.type;
             data.url =
                 nextType === "embed"
                     ? normalizeYouTubeUrl(url)
@@ -409,6 +409,7 @@ router.patch("/:id", async (req, res) => {
 });
 /* =========================================================
    DELETE GALLERY ITEM
+
    DELETE /api/gallery/:id
    ========================================================= */
 router.delete("/:id", async (req, res) => {

@@ -42,8 +42,8 @@ export default function HomepageServices() {
   const scrollLeft = useRef(0);
 
   useEffect(() => {
-    const loadServices = () => {
-      setServices(getServices().filter((service: MedicalService) => service.active));
+    const loadServices = async () => {
+      setServices((await getServices()).filter((service: MedicalService) => service.active));
     };
 
     loadServices();
@@ -390,3 +390,4 @@ export default function HomepageServices() {
     </section>
   );
 }
+

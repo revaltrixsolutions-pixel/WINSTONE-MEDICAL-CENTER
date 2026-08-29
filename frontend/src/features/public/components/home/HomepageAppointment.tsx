@@ -65,7 +65,7 @@ export default function AppointmentPage() {
   useEffect(() => {
     const loadServices = async () => {
       try {
-        const activeServices = getServices().filter(
+        const activeServices = (await getServices()).filter(
           (service: MedicalService) => service.active
         );
 
