@@ -36,7 +36,7 @@ interface GalleryResponse {
   items?: GalleryItem[];
 }
 
-const API_BASE_URL = "/api/gallery";
+const API_BASE_URL = `${import.meta.env.VITE_API_URL || "http://localhost:5000/api"}/gallery`;
 
 async function parseResponse<T>(response: Response): Promise<T> {
   const text = await response.text();
