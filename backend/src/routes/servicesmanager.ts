@@ -1,6 +1,6 @@
 ﻿// backend/routes/servicesmanager.ts
 
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../generated/prisma/index.js";
 import { Router, type Request, type Response } from "express";
 
 const router = Router();
@@ -400,3 +400,4 @@ export default router;
 
 
 // Render services route deployment
+

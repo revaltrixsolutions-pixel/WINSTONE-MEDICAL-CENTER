@@ -1,5 +1,5 @@
 // backend/routes/servicesmanager.ts
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../generated/prisma/index.js";
 import { Router } from "express";
 const router = Router();
 const prisma = new PrismaClient();
