@@ -1,4 +1,4 @@
-import {
+﻿import {
   Edit3,
   Eye,
   EyeOff,
@@ -31,7 +31,7 @@ type ServicePayload = {
   imageUrls: string[];
 };
 
-const API_URL = "/api/services";
+const API_BASE_URL = "https://winstone-medical-center-1.onrender.com";`r`nconst API_URL = `${API_BASE_URL}/api/services`;
 
 const iconOptions = [
   "Stethoscope",

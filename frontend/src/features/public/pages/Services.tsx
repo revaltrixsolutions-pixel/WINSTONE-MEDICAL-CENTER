@@ -1,4 +1,4 @@
-import {
+﻿import {
   Baby,
   HeartPulse,
   Pill,
@@ -27,7 +27,7 @@ type MedicalService = {
   active: boolean;
 };
 
-const API_URL = "/api/services";
+const API_BASE_URL = "https://winstone-medical-center-1.onrender.com";`r`nconst API_URL = `${API_BASE_URL}/api/services`;
 
 const iconMap = {
   Stethoscope,

@@ -1,4 +1,4 @@
-export interface MedicalService {
+﻿export interface MedicalService {
   id: string;
   name: string;
   shortDescription?: string;
@@ -17,7 +17,11 @@ export type MedicalServicePayload = {
   imageUrls: string[];
 };
 
-const API_URL = "/api/services";
+const API_BASE_URL = (
+  import.meta.env.VITE_API_URL || ""
+).replace(/\/+$/, "");
+
+const API_URL = `${API_BASE_URL}/api/services`;
 
 async function parseApiResponse<T>(response: Response): Promise<T> {
   const rawResponse = await response.text();
