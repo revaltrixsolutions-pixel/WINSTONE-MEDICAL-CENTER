@@ -31,7 +31,8 @@ type ServicePayload = {
   imageUrls: string[];
 };
 
-const API_BASE_URL = "https://winstone-medical-center-1.onrender.com";`r`nconst API_URL = `${API_BASE_URL}/api/services`;
+const API_BASE_URL = "https://winstone-medical-center-1.onrender.com";
+const API_URL = `${API_BASE_URL}/api/services`;
 
 const iconOptions = [
   "Stethoscope",
@@ -814,3 +815,4 @@ export default function ServiceManager() {
     </div>
   );
 }
+
