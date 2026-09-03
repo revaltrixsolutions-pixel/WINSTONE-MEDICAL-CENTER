@@ -1,5 +1,6 @@
 ﻿// src/components/layouts/HomepageFooter.tsx
 import { MapPin } from "lucide-react";
+import { Link } from "react-router-dom";
 import {
   FaFacebookF,
   FaInstagram,
@@ -85,19 +86,19 @@ function HomepageFooter() {
                 Services
               </a>
 
-              <a
-                href="/doctors"
+              <Link
+                to="/doctors"
                 className="block transition hover:text-white"
               >
                 Doctors
-              </a>
+              </Link>
 
-              <a
-                href="/appointments"
+              <Link
+                to="/appointment"
                 className="block transition hover:text-white"
               >
                 Book Appointment
-              </a>
+              </Link>
 
               <a
                 href="#contact"
