@@ -91,13 +91,17 @@ export interface AppointmentRequest {
  */
 
 const configuredApiUrl = import.meta.env.VITE_API_URL?.trim();
+const isLoopbackUrl = configuredApiUrl
+  ? /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(configuredApiUrl)
+  : false;
 const API_ORIGIN = (
-  configuredApiUrl &&
-  (import.meta.env.DEV || !/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(configuredApiUrl))
+  import.meta.env.DEV && configuredApiUrl && !isLoopbackUrl
     ? configuredApiUrl
     : import.meta.env.DEV
       ? "http://localhost:5000"
-      : "https://winstone-medical-center-1.onrender.com"
+      : !isLoopbackUrl && configuredApiUrl
+        ? configuredApiUrl
+        : "https://winstone-medical-center-1.onrender.com"
 ).replace(/\/api\/?$/i, "").replace(/\/+$/, "");
 
 const API_ROOT = `${API_ORIGIN}/api`;
