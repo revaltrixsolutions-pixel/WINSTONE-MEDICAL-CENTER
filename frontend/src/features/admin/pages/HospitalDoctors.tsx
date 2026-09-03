@@ -90,10 +90,17 @@ export interface AppointmentRequest {
  * works even if VITE_API_URL has not yet been created.
  */
 
-const API_ROOT = (
-  import.meta.env.VITE_API_URL ||
-  "https://winstone-medical-center-1.onrender.com/api"
-).replace(/\/+$/, "");
+const configuredApiUrl = import.meta.env.VITE_API_URL?.trim();
+const API_ORIGIN = (
+  configuredApiUrl &&
+  (import.meta.env.DEV || !/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(configuredApiUrl))
+    ? configuredApiUrl
+    : import.meta.env.DEV
+      ? "http://localhost:5000"
+      : "https://winstone-medical-center-1.onrender.com"
+).replace(/\/api\/?$/i, "").replace(/\/+$/, "");
+
+const API_ROOT = `${API_ORIGIN}/api`;
 
 const API_BASE = `${API_ROOT}/admin/doctors`;
 
@@ -690,6 +697,11 @@ export default function HospitalDoctors() {
         );
       }
 
+      const resolvedUploadedUrl = new URL(
+        uploadedUrl,
+        API_ORIGIN
+      ).toString();
+
       setImageUrls(
         (current) => {
           const cleaned =
@@ -700,7 +712,7 @@ export default function HospitalDoctors() {
 
           return [
             ...cleaned,
-            uploadedUrl,
+            resolvedUploadedUrl,
           ];
         }
       );
