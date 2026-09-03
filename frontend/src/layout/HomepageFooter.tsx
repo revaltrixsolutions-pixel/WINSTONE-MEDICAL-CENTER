@@ -70,30 +70,30 @@ function HomepageFooter() {
             <h3 className="font-semibold text-white">Quick Links</h3>
 
             <div className="mt-4 space-y-3 text-sm">
-              <a href="#home" className="block transition hover:text-white">
+              <a href="/home" className="block transition hover:text-white">
                 Home
               </a>
 
-              <a href="#about" className="block transition hover:text-white">
+              <a href="/about" className="block transition hover:text-white">
                 About Us
               </a>
 
               <a
-                href="#services"
+                href="/services"
                 className="block transition hover:text-white"
               >
                 Services
               </a>
 
               <a
-                href="#doctors"
+                href="/doctors"
                 className="block transition hover:text-white"
               >
                 Doctors
               </a>
 
               <a
-                href="#appointment"
+                href="/appointments"
                 className="block transition hover:text-white"
               >
                 Book Appointment
