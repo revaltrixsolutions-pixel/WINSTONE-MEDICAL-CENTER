@@ -21,7 +21,7 @@ export function AppRoutes() {
       <Route path="/" element={<Home />} />
       <Route path="/about" element={<AboutUs />} />
       <Route path="/services" element={<ServicesPage />} />
-      <Route path="/doctors" element={<Doctors />} />
+      <Route path="/api/doctors" element={<Doctors />} />
       <Route path="/api/gallery" element={<HospitalGallery />} />
       <Route path="/appointment" element={<AppointmentPage />} />
 
@@ -38,6 +38,7 @@ export function AppRoutes() {
     </Routes>
   );
 }
+
 
 
 

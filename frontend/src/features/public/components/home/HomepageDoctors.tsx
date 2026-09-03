@@ -261,7 +261,7 @@ export default function HomepageDoctors() {
           `${API_BASE_URL}/doctors`
         );
 
-        const response = await api.get("/doctors");
+        const response = await api.get("/api/doctors");
 
         const result = response.data;
 
@@ -1729,6 +1729,7 @@ export default function HomepageDoctors() {
     </section>
   );
 }
+
 
 
 
