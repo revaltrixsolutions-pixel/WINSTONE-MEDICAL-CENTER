@@ -29,7 +29,7 @@ interface GalleryItem {
 | in production instead of sending /api/gallery to Vercel.
 |
 | Local .env:
-| VITE_API_URL=http://localhost:5000/api
+| VITE_API_URL=https://winstone-medical-center-1.onrender.com/api
 |
 | Vercel Environment Variable:
 | VITE_API_URL=https://winstone-medical-center-1.onrender.com
@@ -38,7 +38,7 @@ interface GalleryItem {
 
 const API_BASE_URL =
   import.meta.env.VITE_API_URL?.trim() ||
-  "http://localhost:5000/api";
+  "https://winstone-medical-center-1.onrender.com/api";
 
 const GALLERY_API_URL = `${API_BASE_URL.replace(/\/+$/, "")}/gallery`;
 
@@ -825,6 +825,7 @@ export default function GalleryManager() {
     </div>
   );
 }
+
 
 
 

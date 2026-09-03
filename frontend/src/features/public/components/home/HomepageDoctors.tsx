@@ -75,7 +75,7 @@ interface RatingResponse {
 ========================================================= */
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+  import.meta.env.VITE_API_URL || "https://winstone-medical-center-1.onrender.com/api";
 
 const BACKEND_URL = API_BASE_URL.replace(/\/api\/?$/, "");
 
@@ -93,7 +93,7 @@ const DEFAULT_DOCTOR_IMAGE =
  * /uploads/doctors/image.jpg
  *
  * Browser URL:
- * http://localhost:5000/uploads/doctors/image.jpg
+ * https://winstone-medical-center-1.onrender.com/uploads/doctors/image.jpg
  *
  * Full external URLs and data URLs are returned unchanged.
  */
@@ -1729,6 +1729,7 @@ export default function HomepageDoctors() {
     </section>
   );
 }
+
 
 
 

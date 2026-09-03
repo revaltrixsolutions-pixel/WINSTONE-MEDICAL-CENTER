@@ -84,7 +84,7 @@ export interface AppointmentRequest {
  *
  * Recommended .env:
  *
- * VITE_API_URL=http://localhost:5000/api
+ * VITE_API_URL=https://winstone-medical-center-1.onrender.com/api
  *
  * The code below also has a localhost fallback so development
  * works even if VITE_API_URL has not yet been created.
@@ -92,7 +92,7 @@ export interface AppointmentRequest {
 
 const API_ROOT = (
   import.meta.env.VITE_API_URL ||
-  "http://localhost:5000/api"
+  "https://winstone-medical-center-1.onrender.com/api"
 ).replace(/\/+$/, "");
 
 const API_BASE = `${API_ROOT}/admin/doctors`;
@@ -2398,6 +2398,7 @@ export default function HospitalDoctors() {
     </section>
   );
 }
+
 
 
 
