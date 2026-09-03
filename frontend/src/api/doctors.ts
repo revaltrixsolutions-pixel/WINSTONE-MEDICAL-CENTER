@@ -270,3 +270,4 @@ export default {
   getDoctorAppointments,
   updateDoctorAppointmentStatus,
 };
+

@@ -271,3 +271,4 @@ export async function deleteService(id: string): Promise<void> {
 
   await parseResponse<{ message?: string }>(response);
 }
+
