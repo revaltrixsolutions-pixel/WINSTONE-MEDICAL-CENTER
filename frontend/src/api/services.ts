@@ -35,10 +35,10 @@ interface ApiErrorResponse {
 }
 
 const API_BASE_URL = (
-  import.meta.env.VITE_API_URL || ""
+  import.meta.env.VITE_API_URL || "/api"
 ).replace(/\/$/, "");
 
-const SERVICES_ENDPOINT = `${API_BASE_URL}/api/services`;
+const SERVICES_ENDPOINT = `${API_BASE_URL}/services`;
 
 function normalizeImageUrls(service: MedicalService): string[] {
   if (Array.isArray(service.imageUrls)) {
