@@ -4,7 +4,7 @@
    API URL
    ========================================================= */
 
-const APPOINTMENTS_URL = "/appointments";
+const APPOINTMENTS_URL = "/api/appointments";
 
 /* =========================================================
    TYPES
@@ -389,4 +389,5 @@ export default {
   markAppointmentNoShow,
   deleteAppointment,
 };
+
 

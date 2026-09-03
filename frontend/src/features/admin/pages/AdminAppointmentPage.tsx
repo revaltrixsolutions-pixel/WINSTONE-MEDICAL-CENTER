@@ -266,7 +266,7 @@ export default function AppointmentPage() {
 
         const response =
           await api.get<AppointmentListResponse>(
-            "/appointments"
+            "/api/appointments"
           );
 
         console.log(
@@ -1315,4 +1315,5 @@ export default function AppointmentPage() {
     </div>
   );
 }
+
 
