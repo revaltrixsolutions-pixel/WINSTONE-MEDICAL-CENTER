@@ -36,11 +36,14 @@ interface GalleryItem {
 |
 */
 
-const API_BASE_URL =
+const API_BASE_URL = (
   import.meta.env.VITE_API_URL?.trim() ||
-  "https://winstone-medical-center-1.onrender.com/api";
+  "https://winstone-medical-center-1.onrender.com"
+)
+  .replace(/\/api\/?$/i, "")
+  .replace(/\/+$/, "");
 
-const GALLERY_API_URL = `${API_BASE_URL.replace(/\/+$/, "")}/gallery`;
+const GALLERY_API_URL = `${API_BASE_URL}/api/gallery`;
 
 export default function GalleryManager() {
   const [items, setItems] = useState<GalleryItem[]>([]);

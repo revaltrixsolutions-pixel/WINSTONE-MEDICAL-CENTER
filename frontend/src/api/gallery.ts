@@ -36,7 +36,15 @@ interface GalleryResponse {
   items?: GalleryItem[];
 }
 
-const API_BASE_URL = `${import.meta.env.VITE_API_URL || "https://winstone-medical-center-1.onrender.com/api"}/gallery`;
+const API_ORIGIN = (
+  import.meta.env.VITE_API_URL ||
+  "https://winstone-medical-center-1.onrender.com"
+)
+  .trim()
+  .replace(/\/api\/?$/i, "")
+  .replace(/\/+$/, "");
+
+const API_BASE_URL = `${API_ORIGIN}/api/gallery`;
 
 async function parseResponse<T>(response: Response): Promise<T> {
   const text = await response.text();
