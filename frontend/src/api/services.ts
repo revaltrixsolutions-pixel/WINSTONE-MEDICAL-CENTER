@@ -34,11 +34,12 @@ interface ApiErrorResponse {
   error?: string;
 }
 
-const API_BASE_URL = (
-  import.meta.env.VITE_API_URL || "/api"
-).replace(/\/$/, "");
+const API_BASE_URL = (import.meta.env.VITE_API_URL || "")
+  .trim()
+  .replace(/\/api\/?$/i, "")
+  .replace(/\/+$/, "");
 
-const SERVICES_ENDPOINT = `${API_BASE_URL}/services`;
+const SERVICES_ENDPOINT = `${API_BASE_URL}/api/services`;
 
 function normalizeImageUrls(service: MedicalService): string[] {
   if (Array.isArray(service.imageUrls)) {
