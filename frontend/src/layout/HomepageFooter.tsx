@@ -1,4 +1,4 @@
-// src/components/layouts/HomepageFooter.tsx
+﻿// src/components/layouts/HomepageFooter.tsx
 import { MapPin } from "lucide-react";
 import {
   FaFacebookF,
@@ -210,7 +210,7 @@ function HomepageFooter() {
         {/* Bottom */}
         <div className="mt-12 flex flex-col gap-3 border-t border-white/10 pt-6 text-center text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:text-left">
           <p>
-            © {new Date().getFullYear()} Winston Medical Centre. All rights
+            Â© {new Date().getFullYear()} Winston Medical Centre. All rights
             reserved.
           </p>
 
@@ -230,3 +230,4 @@ function HomepageFooter() {
 }
 
 export default HomepageFooter;
+

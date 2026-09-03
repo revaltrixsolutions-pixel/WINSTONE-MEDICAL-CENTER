@@ -1,4 +1,4 @@
-import { CheckCircle2, ArrowRight, ShieldCheck, HeartPulse, Sparkles } from "lucide-react";
+﻿import { CheckCircle2, ArrowRight, ShieldCheck, HeartPulse, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import homeAboutImg from "@/assets/Homeabout.png";
 
@@ -103,3 +103,4 @@ export default function HomepageAbout() {
     </section>
   );
 }
+

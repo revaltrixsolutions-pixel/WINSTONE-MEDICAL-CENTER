@@ -1,4 +1,4 @@
-import { Clock, HeartHandshake, ShieldCheck } from "lucide-react";
+﻿import { Clock, HeartHandshake, ShieldCheck } from "lucide-react";
 
 const reasons = [
   {

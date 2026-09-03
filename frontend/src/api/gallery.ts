@@ -1,4 +1,4 @@
-export type GalleryMediaType = "image" | "video" | "embed";
+﻿export type GalleryMediaType = "image" | "video" | "embed";
 
 export interface GalleryItem {
   id: string;

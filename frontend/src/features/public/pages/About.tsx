@@ -1,4 +1,4 @@
-import { 
+﻿import { 
   Building2, 
   Award, 
   Target, 
@@ -143,7 +143,7 @@ export default function About() {
               </p>
             </div>
             <div className="mt-8 pt-4 border-t border-white/10 text-xs font-mono text-cyan-400">
-              WMC • CORE DIRECTIVE
+              WMC â€¢ CORE DIRECTIVE
             </div>
           </div>
 
@@ -158,7 +158,7 @@ export default function About() {
               </p>
             </div>
             <div className="mt-8 pt-4 border-t border-white/10 text-xs font-mono text-blue-400">
-              WMC • FUTURE OUTLOOK
+              WMC â€¢ FUTURE OUTLOOK
             </div>
           </div>
 
@@ -176,7 +176,7 @@ export default function About() {
               </ul>
             </div>
             <div className="mt-8 pt-4 border-t border-white/10 text-xs font-mono text-fuchsia-400">
-              WMC • CODE OF CONDUCT
+              WMC â€¢ CODE OF CONDUCT
             </div>
           </div>
         </section>
@@ -307,3 +307,4 @@ export default function About() {
     </div>
   );
 }
+

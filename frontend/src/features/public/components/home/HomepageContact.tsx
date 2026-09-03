@@ -1,4 +1,4 @@
-import { Clock3, Mail, MapPin, Phone, Sparkles, ArrowUpRight } from "lucide-react";
+﻿import { Clock3, Mail, MapPin, Phone, Sparkles, ArrowUpRight } from "lucide-react";
 
 export default function HomepageContact() {
   return (
@@ -51,7 +51,7 @@ export default function HomepageContact() {
               <p className="mt-2 text-sm text-slate-300 font-mono">+254 708 130 100</p>
             </div>
 
-            <span className="mt-6 inline-block text-xs font-semibold text-cyan-400">Call Us Now →</span>
+            <span className="mt-6 inline-block text-xs font-semibold text-cyan-400">Call Us Now â†’</span>
           </a>
 
           {/* Email Card */}
@@ -72,7 +72,7 @@ export default function HomepageContact() {
               <p className="mt-2 text-sm text-slate-300 truncate">info@winstonmedicalcentre.co.ke</p>
             </div>
 
-            <span className="mt-6 inline-block text-xs font-semibold text-fuchsia-400">Send a Message →</span>
+            <span className="mt-6 inline-block text-xs font-semibold text-fuchsia-400">Send a Message â†’</span>
           </a>
 
           {/* Location Card */}

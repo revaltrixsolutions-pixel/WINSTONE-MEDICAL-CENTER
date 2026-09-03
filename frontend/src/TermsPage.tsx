@@ -1,4 +1,4 @@
-import { Home, FileText } from "lucide-react"; // Keep this line
+﻿import { Home, FileText } from "lucide-react"; // Keep this line
 import { Link } from "react-router-dom"; // Keep this line
 import HomepageHeader from "@/layout/HomepageHeader.tsx";
 import HomepageFooter from "@/layout/HomepageFooter.tsx";

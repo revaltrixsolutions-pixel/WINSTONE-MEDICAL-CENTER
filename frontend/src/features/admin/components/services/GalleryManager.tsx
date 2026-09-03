@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 
 import {
   Trash2,
@@ -32,7 +32,7 @@ interface GalleryItem {
 | VITE_API_URL=http://localhost:5000/api
 |
 | Vercel Environment Variable:
-| VITE_API_URL=https://winstone-medical-center-1.onrender.com/api
+| VITE_API_URL=https://winstone-medical-center-1.onrender.com
 |
 */
 
@@ -825,3 +825,4 @@ export default function GalleryManager() {
     </div>
   );
 }
+

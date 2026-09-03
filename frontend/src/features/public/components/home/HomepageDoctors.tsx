@@ -1,4 +1,4 @@
-import {
+﻿import {
   Sparkles,
   Stethoscope,
   X,
@@ -984,7 +984,7 @@ export default function HomepageDoctors() {
 
                     <div className="px-6 pb-6 pt-0 text-center">
                       <span className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 group-hover:underline">
-                        View Full Profile & Options →
+                        View Full Profile & Options â†’
                       </span>
                     </div>
                   </div>

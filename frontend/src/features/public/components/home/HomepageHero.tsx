@@ -1,4 +1,4 @@
-import { ArrowRight, Clock3, ShieldCheck, Stethoscope, Sparkles } from "lucide-react";
+﻿import { ArrowRight, Clock3, ShieldCheck, Stethoscope, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroImg from "@/assets/hero.png";
 
@@ -67,7 +67,7 @@ export default function HomepageHero() {
           <div className="space-y-6">
             <div className="inline-flex items-center gap-2 rounded-full bg-white/80 backdrop-blur-md px-4 py-2 text-xs font-bold text-sky-800 shadow-lg border border-white/40">
               <Sparkles size={15} className="text-yellow-600 animate-spin" />
-              <span>Trusted Healthcare • Standard Drive, Eastlands</span>
+              <span>Trusted Healthcare â€¢ Standard Drive, Eastlands</span>
             </div>
 
             <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 leading-[1.1]">
@@ -171,3 +171,4 @@ export default function HomepageHero() {
     </section>
   );
 }
+

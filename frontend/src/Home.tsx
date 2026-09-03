@@ -1,4 +1,4 @@
-import HomepageAbout from "@/features/public/components/home/HomepageAbout.tsx";
+﻿import HomepageAbout from "@/features/public/components/home/HomepageAbout.tsx";
 import HomepageContact from "@/features/public/components/home/HomepageContact.tsx";
 import HomepageDoctors from "@/features/public/components/home/HomepageDoctors.tsx";
 import HomepageHero from "@/features/public/components/home/HomepageHero.tsx";

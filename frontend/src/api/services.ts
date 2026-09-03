@@ -1,4 +1,4 @@
-// frontend/src/api/services.ts
+﻿// frontend/src/api/services.ts
 
 export interface MedicalService {
   id: string;

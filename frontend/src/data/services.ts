@@ -175,3 +175,4 @@ export async function deleteService(id: string): Promise<void> {
 
   await parseApiResponse<{ message: string }>(response);
 }
+
