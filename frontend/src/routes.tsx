@@ -30,7 +30,7 @@ export function AppRoutes() {
       <Route path="/admin/services" element={<AdminServices />} />
       <Route path="/admin/gallery" element={<AdminGallery />} />
       <Route path="/admin/doctors" element={<HospitalDoctors />} />
-      <Route path="/apiappointments" element={<AdminAppointments />} />
+      <Route path="/appointments" element={<AdminAppointments />} />
 
       {/* Legal Pages */}
       <Route path="/terms" element={<TermsPage />} />
@@ -42,7 +42,4 @@ export function AppRoutes() {
 
 
 
-
-
-
-
+s
