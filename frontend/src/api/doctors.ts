@@ -50,7 +50,7 @@ export interface Appointment {
    API ENDPOINT
    ========================================================= */
 
-const DOCTORS_URL = "/admin/doctors";
+const DOCTORS_URL = "/api/admin/doctors";
 
 /* =========================================================
    GET ALL DOCTORS
@@ -270,5 +270,7 @@ export default {
   getDoctorAppointments,
   updateDoctorAppointmentStatus,
 };
+
+
 
 

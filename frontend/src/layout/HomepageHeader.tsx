@@ -25,7 +25,7 @@ type MenuItem = {
 const navigation: MenuItem[] = [
   { name: "Home", href: "/", icon: Hospital },
   { name: "Services", href: "/services", icon: Stethoscope },
-  { name: "Gallery", href: "/gallery", icon: Sparkles },
+  { name: "Gallery", href: "/api/gallery", icon: Sparkles },
   { name: "About", href: "/about", icon: Hospital },
   { name: "Doctors", href: "/doctors", icon: UserCheck },
   { name: "Terms", href: "/terms", icon: FileText },
@@ -198,6 +198,7 @@ function HomepageHeader() {
 }
 
 export default HomepageHeader;
+
 
 
 

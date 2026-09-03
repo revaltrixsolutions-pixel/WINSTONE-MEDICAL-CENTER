@@ -66,9 +66,9 @@ export default function AdminDashboard() {
             </Link>
 
             <Link
-              to="/admin/doctors"
+              to="/api/admin/doctors"
               className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-bold transition ${
-                location.pathname === "/admin/doctors"
+                location.pathname === "/api/admin/doctors"
                   ? "bg-cyan-500 text-slate-950 shadow-lg shadow-cyan-500/20"
                   : "text-slate-300 hover:bg-white/5 hover:text-white"
               }`}
@@ -156,7 +156,7 @@ export default function AdminDashboard() {
               </Link>
 
               <Link
-                to="/admin/doctors"
+                to="/api/admin/doctors"
                 className="group rounded-3xl border border-white/10 bg-gradient-to-b from-white/[0.08] to-white/[0.02] p-8 shadow-2xl transition-all hover:border-emerald-400/50 hover:bg-white/[0.12] flex flex-col justify-between"
               >
                 <div>
@@ -201,5 +201,6 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
 
 
