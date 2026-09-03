@@ -21,16 +21,16 @@ export function AppRoutes() {
       <Route path="/" element={<Home />} />
       <Route path="/about" element={<AboutUs />} />
       <Route path="/services" element={<ServicesPage />} />
-      <Route path="/api/doctors" element={<Doctors />} />
-      <Route path="/api/gallery" element={<HospitalGallery />} />
+      <Route path="/doctors" element={<Doctors />} />
+      <Route path="/gallery" element={<HospitalGallery />} />
       <Route path="/appointment" element={<AppointmentPage />} />
 
       {/* Admin Pages */}
       <Route path="/admindashboard" element={<AdminDashboard />} />
       <Route path="/admin/services" element={<AdminServices />} />
       <Route path="/admin/gallery" element={<AdminGallery />} />
-      <Route path="/api/admin/doctors" element={<HospitalDoctors />} />
-      <Route path="/api/appointments" element={<AdminAppointments />} />
+      <Route path="/admin/doctors" element={<HospitalDoctors />} />
+      <Route path="/apiappointments" element={<AdminAppointments />} />
 
       {/* Legal Pages */}
       <Route path="/terms" element={<TermsPage />} />
