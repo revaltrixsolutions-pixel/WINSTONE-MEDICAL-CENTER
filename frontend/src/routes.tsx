@@ -38,8 +38,3 @@ export function AppRoutes() {
     </Routes>
   );
 }
-
-
-
-
-s
