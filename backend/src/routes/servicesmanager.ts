@@ -1,6 +1,6 @@
 ﻿// backend/routes/servicesmanager.ts
 
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../../generated/prisma/index.js";
 import { Router, type Request, type Response } from "express";
 
 const router = Router();
@@ -121,20 +121,27 @@ function validateServicePayload(
 function formatService(service: {
   id: string;
   name: string;
-  shortDescription: string;
+  shortDescription: string | null;
   description: string;
   icon: string;
+  imageUrl?: string | null;
   imageUrls: unknown;
   active: boolean;
   createdAt: Date;
   updatedAt: Date;
 }) {
-  const imageUrls = normalizeImageUrls(service.imageUrls);
+  const normalizedImageUrls = normalizeImageUrls(service.imageUrls);
+  const imageUrls =
+    normalizedImageUrls.length > 0
+      ? normalizedImageUrls
+      : typeof service.imageUrl === "string" && service.imageUrl.trim()
+        ? [service.imageUrl.trim()]
+        : [];
 
   return {
     id: service.id,
     name: service.name,
-    shortDescription: service.shortDescription,
+    shortDescription: service.shortDescription ?? "",
     description: service.description,
     icon: service.icon,
     imageUrls,
