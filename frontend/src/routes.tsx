@@ -14,6 +14,7 @@ import Doctors from "@/features/public/pages/Doctors.tsx";
 import TermsPage from "@/features/public/pages/TermsPage.tsx";
 import PrivacyPage from "@/features/public/pages/PrivacyPage.tsx";
 import ShopPage from "@/features/public/pages/ShopPage.tsx";
+import ProductPage from "@/features/public/pages/ProductPage.tsx";
 import AdminShopPage from "@/features/admin/pages/AdminShopPage.tsx";
 
 export function AppRoutes() {
@@ -27,6 +28,7 @@ export function AppRoutes() {
       <Route path="/gallery" element={<HospitalGallery />} />
       <Route path="/appointment" element={<AppointmentPage />} />
       <Route path="/shop" element={<ShopPage />} />
+      <Route path="/shop/product/:id" element={<ProductPage />} />
 
       {/* Admin Pages */}
       <Route path="/admindashboard" element={<AdminDashboard />} />
@@ -42,3 +44,4 @@ export function AppRoutes() {
     </Routes>
   );
 }
+
