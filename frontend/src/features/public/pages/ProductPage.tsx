@@ -132,7 +132,7 @@ export default function ProductPage() {
               )}
 
               <div className="text-3xl font-bold text-blue-600 mb-6">
-                KES {Number(product.price).toLocaleString()}
+                KSh {Number(product.price).toLocaleString()}
               </div>
 
               <div className="mb-8">
@@ -186,4 +186,5 @@ export default function ProductPage() {
     </div>
   );
 }
+
 

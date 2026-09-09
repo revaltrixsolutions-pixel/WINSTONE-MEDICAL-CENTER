@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
   CheckCircle2,
@@ -1248,7 +1248,7 @@ export const ShopManager: React.FC = () => {
                             </div>
 
                             <div className="mt-1 text-lg font-bold">
-                              $
+                              KSh 
                               {Number(
                                 product.price
                               ).toFixed(
@@ -1540,7 +1540,7 @@ export const ShopManager: React.FC = () => {
                               ?.price !==
                               undefined && (
                               <div className="mt-1 font-bold">
-                                $
+                                KSh 
                                 {Number(
                                   order
                                     .product
@@ -1885,7 +1885,7 @@ export const ShopManager: React.FC = () => {
                   </label>
 
                   <span className="text-xs text-gray-500">
-                    JPG, PNG, WEBP or GIF • Max 5MB
+                    JPG, PNG, WEBP or GIF â€¢ Max 5MB
                   </span>
                 </div>
 

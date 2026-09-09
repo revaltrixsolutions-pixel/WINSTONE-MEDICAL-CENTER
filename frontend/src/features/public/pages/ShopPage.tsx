@@ -1,4 +1,4 @@
-
+﻿
 import React, { useEffect, useState } from "react";
 import { shopApi } from "../../../api/shop";
 import type { Product } from "../../../api/shop";
@@ -31,7 +31,7 @@ export const ShopPage: React.FC = () => {
               <h3 className="text-xl font-semibold mb-2">{product.name}</h3>
               <p className="text-gray-600 text-sm mb-4">{product.shortDescription || product.description.substring(0, 80) + "..."}</p>
               <div className="flex justify-between items-center">
-                <span className="text-lg font-bold text-blue-600">${product.price.toFixed(2)}</span>
+                <span className="text-lg font-bold text-blue-600">KSh {product.price.toFixed(2)}</span>
                 <button
                   onClick={() => setSelectedProduct(product)}
                   className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
@@ -50,4 +50,5 @@ export const ShopPage: React.FC = () => {
   );
 };
 export default ShopPage;
+
 

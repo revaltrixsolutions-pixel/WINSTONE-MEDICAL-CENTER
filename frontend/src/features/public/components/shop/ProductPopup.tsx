@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import { shopApi } from "../../../../api/shop";
 import type { Product } from "../../../../api/shop";
 
@@ -42,7 +42,7 @@ export const ProductPopup: React.FC<Props> = ({ product, onClose }) => {
       if (deliveryType === "WHATSAPP_1HR") {
         const businessPhone = "254708130100";
         const message = encodeURIComponent(
-          `Hello! I just ordered ${product.name} ($${product.price}).\nOrder ID: ${order.id}\nCustomer: ${customerName} (${customerPhone})\nPayment: ${paymentMethod} ${paymentId ? `(ID: ${paymentId})` : ""}\nRequesting 1-Hour WhatsApp Express Delivery!`
+          `Hello! I just ordered ${product.name} (KSh ${product.price}).\nOrder ID: ${order.id}\nCustomer: ${customerName} (${customerPhone})\nPayment: ${paymentMethod} ${paymentId ? `(ID: ${paymentId})` : ""}\nRequesting 1-Hour WhatsApp Express Delivery!`
         );
         window.location.href = `https://wa.me/${businessPhone}?text=${message}`;
       } else {
@@ -74,7 +74,7 @@ export const ProductPopup: React.FC<Props> = ({ product, onClose }) => {
             )}
             <p className="text-slate-700 mb-2 font-medium">{product.shortDescription}</p>
             <p className="text-slate-500 text-sm mb-4">{product.description}</p>
-            <div className="text-xl font-bold text-blue-600 mb-6">${product.price.toFixed(2)}</div>
+            <div className="text-xl font-bold text-blue-600 mb-6">KSh ${product.price.toFixed(2)}</div>
             
             <form onSubmit={handleProceedToPayment} className="space-y-4">
               <div>
@@ -94,7 +94,7 @@ export const ProductPopup: React.FC<Props> = ({ product, onClose }) => {
           <div>
             <h2 className="text-xl font-bold mb-4 text-slate-900">Select Payment Method</h2>
             <div className="bg-slate-50 p-4 rounded-xl mb-4 border border-slate-200">
-              <p className="font-semibold text-slate-800">Total Price to Pay: <span className="text-blue-600">${product.price.toFixed(2)}</span></p>
+              <p className="font-semibold text-slate-800">Total Price to Pay: <span className="text-blue-600">KSh ${product.price.toFixed(2)}</span></p>
             </div>
             
             <div className="flex gap-3 mb-4">
