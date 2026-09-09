@@ -1,41 +1,72 @@
 import { Router } from "express";
+
 import { ShopController } from "./shop.controller.js";
 
 const router = Router();
 
-const shopController = new ShopController();
+const shopController =
+  new ShopController();
 
-/**
- * =========================================================
- * PUBLIC SHOP ROUTES
- * =========================================================
- */
+/* =========================================================
+   PUBLIC SHOP
+========================================================= */
 
-// Get all active products
-router.get("/products", shopController.getProducts);
+router.get(
+  "/products",
+  shopController.getProducts
+);
 
-// Create customer order
-router.post("/orders", shopController.createOrder);
+router.post(
+  "/orders",
+  shopController.createOrder
+);
 
-/**
- * =========================================================
- * ADMIN SHOP ROUTES
- * =========================================================
- */
+/* =========================================================
+   ADMIN PRODUCTS
+========================================================= */
 
-// Get all products for admin
-router.get("/admin/products", shopController.getAdminProducts);
+router.get(
+  "/admin/products",
+  shopController.getAdminProducts
+);
 
-// Create product
-router.post("/admin/products", shopController.createProduct);
+router.post(
+  "/admin/products",
+  shopController.createProduct
+);
 
-// Update product
-router.put("/admin/products/:id", shopController.updateProduct);
+router.put(
+  "/admin/products/:id",
+  shopController.updateProduct
+);
 
-// Delete product
-router.delete("/admin/products/:id", shopController.deleteProduct);
+router.delete(
+  "/admin/products/:id",
+  shopController.deleteProduct
+);
 
-// Get all orders for admin
-router.get("/admin/orders", shopController.getAdminOrders);
+/* =========================================================
+   ADMIN ORDERS
+========================================================= */
+
+router.get(
+  "/admin/orders",
+  shopController.getAdminOrders
+);
+
+router.post(
+  "/admin/orders/:id/confirm-payment",
+  shopController.confirmPayment
+);
+
+router.put(
+  "/admin/orders/:id/note",
+  shopController.updateOrderNote
+);
+
+router.put(
+  "/admin/orders/:id/status",
+  shopController.updateOrderStatus
+);
 
 export const shopRoutes = router;

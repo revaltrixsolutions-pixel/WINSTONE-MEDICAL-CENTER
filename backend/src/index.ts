@@ -22,9 +22,12 @@ app.use(
 );
 
 app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ extended: true, limit: "50mb" }));
-
-app.use('/api/shop', shopRoutes);
+app.use(
+  express.urlencoded({
+    extended: true,
+    limit: "50mb",
+  })
+);
 
 /* =========================================================
    STATIC UPLOADS
@@ -45,11 +48,20 @@ app.use(
 ========================================================= */
 
 app.get("/api/health", (_req, res) => {
-  res.json({
+  res.status(200).json({
     success: true,
     message: "Winston Medical Centre API is running",
   });
 });
+
+/* =========================================================
+   SHOP
+========================================================= */
+
+app.use(
+  "/api/shop",
+  shopRoutes
+);
 
 /* =========================================================
    DOCTORS
@@ -78,8 +90,19 @@ app.use(
    GALLERY
 ========================================================= */
 
-app.use("/api/gallery", galleryManagerRouter);
-app.use("/api/services", servicesManagerRouter);
+app.use(
+  "/api/gallery",
+  galleryManagerRouter
+);
+
+/* =========================================================
+   SERVICES
+========================================================= */
+
+app.use(
+  "/api/services",
+  servicesManagerRouter
+);
 
 /* =========================================================
    404 HANDLER
@@ -128,10 +151,35 @@ app.listen(PORT, () => {
   console.log("==============================================");
   console.log(` Server running: http://localhost:${PORT}`);
   console.log(` API:            http://localhost:${PORT}/api`);
-  console.log(` Health:         http://localhost:${PORT}/api/health`);
-  console.log(` Doctors:        http://localhost:${PORT}/api/doctors`);
+  console.log(
+    ` Health:         http://localhost:${PORT}/api/health`
+  );
+  console.log(
+    ` Doctors:        http://localhost:${PORT}/api/doctors`
+  );
   console.log(
     ` Admin Doctors:  http://localhost:${PORT}/api/admin/doctors`
+  );
+  console.log(
+    ` Appointments:   http://localhost:${PORT}/api/appointments`
+  );
+  console.log(
+    ` Gallery:        http://localhost:${PORT}/api/gallery`
+  );
+  console.log(
+    ` Services:       http://localhost:${PORT}/api/services`
+  );
+  console.log(
+    ` Shop:           http://localhost:${PORT}/api/shop`
+  );
+  console.log(
+    ` Shop Products:  http://localhost:${PORT}/api/shop/products`
+  );
+  console.log(
+    ` Shop Orders:    http://localhost:${PORT}/api/shop/orders`
+  );
+  console.log(
+    ` Shop Admin:     http://localhost:${PORT}/api/shop/admin`
   );
   console.log(
     ` Uploads:        http://localhost:${PORT}/uploads`

@@ -18,6 +18,9 @@ import {
   Clock,
   Truck,
   CreditCard,
+  Upload,
+  ImagePlus,
+  Loader2,
 } from "lucide-react";
 
 import { shopApi } from "../../../../api/shop";
@@ -46,7 +49,6 @@ interface Customer {
 
 interface Order {
   id: string;
-
   customerName: string;
   customerPhone: string;
   customerEmail?: string;
@@ -87,22 +89,14 @@ const emptyForm: ProductForm = {
   description: "",
   price: 0,
   stock: 0,
-  imageUrls: [""],
+  imageUrls: [],
   active: true,
 };
 
-const API_BASE =
-  import.meta.env.VITE_API_URL || "http://localhost:5000";
+/* =========================================================
+   API / PUBLIC URL
+========================================================= */
 
-/*
- * Public product URL.
- *
- * Example:
- * https://yourwebsite.com/shop/product/PRODUCT_ID
- *
- * Change /shop/product/ to match your public product route
- * if your public Shop page uses another route.
- */
 const getPublicProductUrl = (productId: string) => {
   const frontendBase =
     import.meta.env.VITE_FRONTEND_URL ||
@@ -137,16 +131,29 @@ const formatPaymentMethod = (value?: string) => {
   if (value === "PAY_LATTER") return "Pay Later";
   if (value === "PAY_LATER") return "Pay Later";
 
-  return value.replaceAll("_", " ");
+  return value
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, (letter) =>
+      letter.toUpperCase()
+    );
 };
 
 const formatDeliveryType = (value?: string) => {
   if (!value) return "Unknown";
 
-  if (value === "WHATSAPP_1HR") return "WhatsApp / 1 Hour";
-  if (value === "STANDARD_5HR") return "Standard / 5 Hours";
+  if (value === "WHATSAPP_1HR") {
+    return "WhatsApp / 1 Hour";
+  }
 
-  return value.replaceAll("_", " ");
+  if (value === "STANDARD_5HR") {
+    return "Standard / 5 Hours";
+  }
+
+  return value
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, (letter) =>
+      letter.toUpperCase()
+    );
 };
 
 const formatStatus = (value?: string) => {
@@ -155,8 +162,19 @@ const formatStatus = (value?: string) => {
   return value
     .replaceAll("_", " ")
     .toLowerCase()
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+    .replace(/\b\w/g, (letter) =>
+      letter.toUpperCase()
+    );
 };
+
+const getErrorMessage = (
+  error: any,
+  fallback: string
+) =>
+  error?.response?.data?.error ||
+  error?.response?.data?.message ||
+  error?.message ||
+  fallback;
 
 /* =========================================================
    COMPONENT
@@ -170,20 +188,29 @@ export const ShopManager: React.FC = () => {
     "products" | "orders"
   >("products");
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] =
+    useState(false);
 
   const [editingProduct, setEditingProduct] =
     useState<Product | null>(null);
 
-  const [isSaving, setIsSaving] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] =
+    useState(false);
 
-  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] =
+    useState(false);
+
+  const [isUploadingImage, setIsUploadingImage] =
+    useState(false);
+
+  const [error, setError] =
+    useState<string | null>(null);
 
   const [formData, setFormData] =
     useState<ProductForm>(emptyForm);
 
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] =
+    useState("");
 
   const [selectedOrder, setSelectedOrder] =
     useState<Order | null>(null);
@@ -191,7 +218,8 @@ export const ShopManager: React.FC = () => {
   const [confirmationNote, setConfirmationNote] =
     useState("");
 
-  const [isConfirming, setIsConfirming] = useState(false);
+  const [isConfirming, setIsConfirming] =
+    useState(false);
 
   const [copiedProductId, setCopiedProductId] =
     useState<string | null>(null);
@@ -202,10 +230,17 @@ export const ShopManager: React.FC = () => {
 
   const loadProducts = async () => {
     try {
-      const data = await shopApi.getAdminProducts();
-      setProducts(data);
-    } catch (err: any) {
-      console.error("Failed to load products:", err);
+      const data =
+        await shopApi.getAdminProducts();
+
+      setProducts(
+        Array.isArray(data) ? data : []
+      );
+    } catch (err) {
+      console.error(
+        "Failed to load products:",
+        err
+      );
 
       throw err;
     }
@@ -217,37 +252,50 @@ export const ShopManager: React.FC = () => {
 
   const loadOrders = async () => {
     try {
-      const data = await shopApi.getAdminOrders();
-      setOrders(data);
-    } catch (err: any) {
-      console.error("Failed to load orders:", err);
+      const data =
+        await shopApi.getAdminOrders();
+
+      setOrders(
+        Array.isArray(data) ? data : []
+      );
+    } catch (err) {
+      console.error(
+        "Failed to load orders:",
+        err
+      );
 
       throw err;
     }
   };
 
   /* =========================================================
-     LOAD ALL DATA
+     LOAD DATA
   ========================================================= */
 
   const loadData = async () => {
     setIsLoading(true);
     setError(null);
 
-    const results = await Promise.allSettled([
-      loadProducts(),
-      loadOrders(),
-    ]);
+    const results =
+      await Promise.allSettled([
+        loadProducts(),
+        loadOrders(),
+      ]);
 
     const failed = results.find(
-      (result) => result.status === "rejected"
+      (result) =>
+        result.status === "rejected"
     );
 
-    if (failed && failed.status === "rejected") {
+    if (
+      failed &&
+      failed.status === "rejected"
+    ) {
       setError(
-        failed.reason?.response?.data?.error ||
-          failed.reason?.message ||
+        getErrorMessage(
+          failed.reason,
           "Failed to load shop data."
+        )
       );
     }
 
@@ -263,7 +311,8 @@ export const ShopManager: React.FC = () => {
   ========================================================= */
 
   const filteredProducts = useMemo(() => {
-    const term = searchTerm.trim().toLowerCase();
+    const term =
+      searchTerm.trim().toLowerCase();
 
     if (!term) return products;
 
@@ -281,33 +330,42 @@ export const ShopManager: React.FC = () => {
   }, [products, searchTerm]);
 
   /* =========================================================
-     OPEN CREATE MODAL
+     CREATE PRODUCT MODAL
   ========================================================= */
 
   const openCreateModal = () => {
     setEditingProduct(null);
-    setFormData(emptyForm);
+
+    setFormData({
+      ...emptyForm,
+      imageUrls: [],
+    });
+
     setError(null);
     setIsModalOpen(true);
   };
 
   /* =========================================================
-     OPEN EDIT MODAL
+     EDIT PRODUCT MODAL
   ========================================================= */
 
-  const openEditModal = (product: Product) => {
+  const openEditModal = (
+    product: Product
+  ) => {
     setEditingProduct(product);
 
     setFormData({
       name: product.name || "",
-      shortDescription: product.shortDescription || "",
-      description: product.description || "",
+      shortDescription:
+        product.shortDescription || "",
+      description:
+        product.description || "",
       price: Number(product.price) || 0,
       stock: Number(product.stock) || 0,
       imageUrls:
-        product.imageUrls?.length > 0
-          ? product.imageUrls
-          : [""],
+        product.imageUrls?.filter(
+          (url) => url?.trim()
+        ) || [],
       active: Boolean(product.active),
     });
 
@@ -316,22 +374,119 @@ export const ShopManager: React.FC = () => {
   };
 
   /* =========================================================
-     CLOSE MODAL
+     CLOSE PRODUCT MODAL
   ========================================================= */
 
   const closeModal = () => {
-    if (isSaving) return;
+    if (isSaving || isUploadingImage) {
+      return;
+    }
 
     setIsModalOpen(false);
     setEditingProduct(null);
-    setFormData(emptyForm);
+
+    setFormData({
+      ...emptyForm,
+      imageUrls: [],
+    });
+  };
+
+  /* =========================================================
+     UPLOAD PRODUCT IMAGE
+  ========================================================= */
+
+  const handleImageUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file =
+      event.target.files?.[0];
+
+    event.target.value = "";
+
+    if (!file) return;
+
+    const allowedTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      alert(
+        "Only JPG, PNG, WEBP and GIF images are allowed."
+      );
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert(
+        "Image must be smaller than 5MB."
+      );
+      return;
+    }
+
+    setIsUploadingImage(true);
+
+    try {
+      const result =
+        await shopApi.uploadProductImage(
+          file
+        );
+
+      if (!result?.imageUrl) {
+        throw new Error(
+          "The server did not return an image URL."
+        );
+      }
+
+      setFormData((previous) => ({
+        ...previous,
+        imageUrls: [
+          ...previous.imageUrls,
+          result.imageUrl,
+        ],
+      }));
+    } catch (err: any) {
+      console.error(
+        "Image upload error:",
+        err
+      );
+
+      alert(
+        "Failed to upload image: " +
+          getErrorMessage(
+            err,
+            "Unknown error"
+          )
+      );
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  /* =========================================================
+     REMOVE PRODUCT IMAGE
+  ========================================================= */
+
+  const removeImage = (index: number) => {
+    setFormData((previous) => ({
+      ...previous,
+      imageUrls:
+        previous.imageUrls.filter(
+          (_, imageIndex) =>
+            imageIndex !== index
+        ),
+    }));
   };
 
   /* =========================================================
      SAVE PRODUCT
   ========================================================= */
 
-  const handleSubmit = async (event: React.FormEvent) => {
+  const handleSubmit = async (
+    event: React.FormEvent
+  ) => {
     event.preventDefault();
 
     if (!formData.name.trim()) {
@@ -340,17 +495,23 @@ export const ShopManager: React.FC = () => {
     }
 
     if (!formData.description.trim()) {
-      alert("Product description is required.");
+      alert(
+        "Product description is required."
+      );
       return;
     }
 
     if (formData.price < 0) {
-      alert("Price cannot be negative.");
+      alert(
+        "Price cannot be negative."
+      );
       return;
     }
 
     if (formData.stock < 0) {
-      alert("Stock cannot be negative.");
+      alert(
+        "Stock cannot be negative."
+      );
       return;
     }
 
@@ -361,17 +522,20 @@ export const ShopManager: React.FC = () => {
         name: formData.name.trim(),
 
         shortDescription:
-          formData.shortDescription.trim() || undefined,
+          formData.shortDescription.trim() ||
+          undefined,
 
-        description: formData.description.trim(),
+        description:
+          formData.description.trim(),
 
         price: Number(formData.price),
 
         stock: Number(formData.stock),
 
-        imageUrls: formData.imageUrls.filter(
-          (url) => url.trim() !== ""
-        ),
+        imageUrls:
+          formData.imageUrls.filter(
+            (url) => url.trim() !== ""
+          ),
 
         active: formData.active,
       };
@@ -382,7 +546,9 @@ export const ShopManager: React.FC = () => {
           payload
         );
       } else {
-        await shopApi.createProduct(payload);
+        await shopApi.createProduct(
+          payload
+        );
       }
 
       await loadProducts();
@@ -395,13 +561,17 @@ export const ShopManager: React.FC = () => {
           : "Product created successfully."
       );
     } catch (err: any) {
-      console.error("Error saving product:", err);
+      console.error(
+        "Error saving product:",
+        err
+      );
 
       alert(
         "Error saving product: " +
-          (err?.response?.data?.error ||
-            err?.message ||
-            "Unknown error")
+          getErrorMessage(
+            err,
+            "Unknown error"
+          )
       );
     } finally {
       setIsSaving(false);
@@ -412,27 +582,38 @@ export const ShopManager: React.FC = () => {
      DELETE PRODUCT
   ========================================================= */
 
-  const handleDeleteProduct = async (product: Product) => {
-    const confirmed = window.confirm(
-      `Delete "${product.name}"?\n\nThis action cannot be undone.`
-    );
+  const handleDeleteProduct = async (
+    product: Product
+  ) => {
+    const confirmed =
+      window.confirm(
+        `Delete "${product.name}"?\n\nThis action cannot be undone.`
+      );
 
     if (!confirmed) return;
 
     try {
-      await shopApi.deleteProduct(product.id);
+      await shopApi.deleteProduct(
+        product.id
+      );
 
       await loadProducts();
 
-      alert("Product deleted successfully.");
+      alert(
+        "Product deleted successfully."
+      );
     } catch (err: any) {
-      console.error("Error deleting product:", err);
+      console.error(
+        "Error deleting product:",
+        err
+      );
 
       alert(
         "Failed to delete product: " +
-          (err?.response?.data?.error ||
-            err?.message ||
-            "Unknown error")
+          getErrorMessage(
+            err,
+            "Unknown error"
+          )
       );
     }
   };
@@ -441,19 +622,27 @@ export const ShopManager: React.FC = () => {
      COPY PRODUCT LINK
   ========================================================= */
 
-  const copyProductLink = async (productId: string) => {
-    const url = getPublicProductUrl(productId);
+  const copyProductLink = async (
+    productId: string
+  ) => {
+    const url =
+      getPublicProductUrl(productId);
 
     try {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(
+        url
+      );
 
       setCopiedProductId(productId);
 
-      setTimeout(() => {
+      window.setTimeout(() => {
         setCopiedProductId(null);
       }, 2000);
-    } catch (error) {
-      console.error("Unable to copy link:", error);
+    } catch (copyError) {
+      console.error(
+        "Unable to copy link:",
+        copyError
+      );
 
       window.prompt(
         "Copy this product link:",
@@ -466,7 +655,9 @@ export const ShopManager: React.FC = () => {
      OPEN PUBLIC PRODUCT
   ========================================================= */
 
-  const openProductLink = (productId: string) => {
+  const openProductLink = (
+    productId: string
+  ) => {
     window.open(
       getPublicProductUrl(productId),
       "_blank",
@@ -482,20 +673,34 @@ export const ShopManager: React.FC = () => {
     order: Order,
     message?: string
   ) => {
-    const phone = getCustomerPhone(order);
+    const phone =
+      getCustomerPhone(order);
 
     if (!phone) {
-      alert("This customer has no phone number.");
+      alert(
+        "This customer has no phone number."
+      );
       return;
     }
 
-    const cleanedPhone = phone.replace(/[^\d]/g, "");
+    const cleanedPhone =
+      phone.replace(/[^\d]/g, "");
+
+    if (!cleanedPhone) {
+      alert(
+        "The customer's phone number is invalid."
+      );
+      return;
+    }
 
     const defaultMessage =
       `Hello ${getCustomerName(order)},\n\n` +
       `This is Winston Medical Centre regarding your order ` +
       `#${order.id}.\n\n` +
-      `Product: ${order.product?.name || "Your order"}\n` +
+      `Product: ${
+        order.product?.name ||
+        "Your order"
+      }\n` +
       `Payment: ${formatPaymentMethod(
         order.paymentMethod
       )}\n` +
@@ -506,7 +711,9 @@ export const ShopManager: React.FC = () => {
 
     const whatsappUrl =
       `https://wa.me/${cleanedPhone}?text=` +
-      encodeURIComponent(message || defaultMessage);
+      encodeURIComponent(
+        message || defaultMessage
+      );
 
     window.open(
       whatsappUrl,
@@ -519,11 +726,16 @@ export const ShopManager: React.FC = () => {
      EMAIL
   ========================================================= */
 
-  const openEmail = (order: Order) => {
-    const email = getCustomerEmail(order);
+  const openEmail = (
+    order: Order
+  ) => {
+    const email =
+      getCustomerEmail(order);
 
     if (!email) {
-      alert("This customer has no email address.");
+      alert(
+        "This customer has no email address."
+      );
       return;
     }
 
@@ -534,7 +746,10 @@ export const ShopManager: React.FC = () => {
       `Hello ${getCustomerName(order)},\n\n` +
       `We are contacting you regarding your order ` +
       `#${order.id}.\n\n` +
-      `Product: ${order.product?.name || "Your order"}\n` +
+      `Product: ${
+        order.product?.name ||
+        "Your order"
+      }\n` +
       `Payment: ${formatPaymentMethod(
         order.paymentMethod
       )}\n` +
@@ -544,20 +759,26 @@ export const ShopManager: React.FC = () => {
       `Thank you for choosing Winston Medical Centre.`;
 
     window.location.href =
-      `mailto:${email}?subject=${encodeURIComponent(
-        subject
-      )}&body=${encodeURIComponent(body)}`;
+      `mailto:${email}?subject=` +
+      encodeURIComponent(subject) +
+      `&body=` +
+      encodeURIComponent(body);
   };
 
   /* =========================================================
-     CALL
+     CALL CUSTOMER
   ========================================================= */
 
-  const callCustomer = (order: Order) => {
-    const phone = getCustomerPhone(order);
+  const callCustomer = (
+    order: Order
+  ) => {
+    const phone =
+      getCustomerPhone(order);
 
     if (!phone) {
-      alert("This customer has no phone number.");
+      alert(
+        "This customer has no phone number."
+      );
       return;
     }
 
@@ -566,10 +787,12 @@ export const ShopManager: React.FC = () => {
   };
 
   /* =========================================================
-     CONFIRM PAYMENT
+     OPEN CONFIRMATION
   ========================================================= */
 
-  const openConfirmation = (order: Order) => {
+  const openConfirmation = (
+    order: Order
+  ) => {
     setSelectedOrder(order);
 
     setConfirmationNote(
@@ -581,23 +804,7 @@ export const ShopManager: React.FC = () => {
 
   /* =========================================================
      CONFIRM PAYMENT
-     
-     NOTE:
-     The frontend expects the backend to expose:
-     
-     POST /api/shop/admin/orders/:id/confirm-payment
-     
-     with:
-     
-     {
-       note: string
-     }
-     
-     The endpoint should:
-     1. mark payment confirmed
-     2. save admin note
-     3. optionally record confirmedAt/confirmedBy
-========================================================= */
+  ========================================================= */
 
   const confirmPayment = async () => {
     if (!selectedOrder) return;
@@ -605,27 +812,15 @@ export const ShopManager: React.FC = () => {
     setIsConfirming(true);
 
     try {
-      const response = await fetch(
-        `${API_BASE}/api/shop/admin/orders/${selectedOrder.id}/confirm-payment`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            note: confirmationNote.trim(),
-          }),
-        }
-      );
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          result?.error ||
-            "Failed to confirm payment."
+      const result =
+        await shopApi.confirmPayment(
+          selectedOrder.id,
+          {
+            note:
+              confirmationNote.trim() ||
+              undefined,
+          }
         );
-      }
 
       const updatedOrder =
         result?.order || result;
@@ -637,45 +832,46 @@ export const ShopManager: React.FC = () => {
                 ...order,
                 ...updatedOrder,
                 paymentStatus:
-                  updatedOrder.paymentStatus ||
+                  updatedOrder?.paymentStatus ||
                   "CONFIRMED",
                 status:
-                  updatedOrder.status ||
+                  updatedOrder?.status ||
                   "CONFIRMED",
                 adminNote:
                   confirmationNote.trim(),
                 confirmedAt:
-                  updatedOrder.confirmedAt ||
+                  updatedOrder?.confirmedAt ||
                   new Date().toISOString(),
               }
             : order
         )
       );
 
+      const orderForMessage: Order = {
+        ...selectedOrder,
+        ...updatedOrder,
+        paymentStatus: "CONFIRMED",
+        status: "CONFIRMED",
+        adminNote:
+          confirmationNote.trim(),
+      };
+
       setSelectedOrder(null);
       setConfirmationNote("");
 
-      /*
-       * Automatically prepare/send the customer
-       * a WhatsApp confirmation.
-       */
       openWhatsApp(
-        {
-          ...selectedOrder,
-          paymentStatus: "CONFIRMED",
-          status: "CONFIRMED",
-        },
+        orderForMessage,
         `Hello ${getCustomerName(
-          selectedOrder
+          orderForMessage
         )},\n\n` +
-          `Good news! Your payment for order #${selectedOrder.id} ` +
+          `Good news! Your payment for order #${orderForMessage.id} ` +
           `has been confirmed by Winston Medical Centre.\n\n` +
           `Product: ${
-            selectedOrder.product?.name ||
+            orderForMessage.product?.name ||
             "Your order"
           }\n` +
           `Delivery: ${formatDeliveryType(
-            selectedOrder.deliveryType
+            orderForMessage.deliveryType
           )}\n\n` +
           `${
             confirmationNote.trim()
@@ -684,16 +880,18 @@ export const ShopManager: React.FC = () => {
           }` +
           `Thank you for your order. We will proceed with your delivery.`
       );
-    } catch (error: any) {
+    } catch (err: any) {
       console.error(
         "Failed to confirm payment:",
-        error
+        err
       );
 
       alert(
         "Failed to confirm payment: " +
-          (error?.message ||
-            "Unknown error")
+          getErrorMessage(
+            err,
+            "Unknown error"
+          )
       );
     } finally {
       setIsConfirming(false);
@@ -701,10 +899,12 @@ export const ShopManager: React.FC = () => {
   };
 
   /* =========================================================
-     ORDER STATUS
+     PAYMENT STATUS
   ========================================================= */
 
-  const isPaymentConfirmed = (order: Order) => {
+  const isPaymentConfirmed = (
+    order: Order
+  ) => {
     const status =
       `${order.paymentStatus || ""} ${
         order.status || ""
@@ -728,22 +928,20 @@ export const ShopManager: React.FC = () => {
       ===================================================== */}
 
       <div className="flex flex-col gap-4 rounded-xl border bg-white p-5 shadow-sm md:flex-row md:items-center md:justify-between">
-        <div>
-          <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-blue-100 p-3 text-blue-700">
-              <Package size={24} />
-            </div>
+        <div className="flex items-center gap-3">
+          <div className="rounded-xl bg-blue-100 p-3 text-blue-700">
+            <Package size={24} />
+          </div>
 
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                Shop Management
-              </h1>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Shop Management
+            </h1>
 
-              <p className="text-sm text-gray-500">
-                Manage products, orders, payments and
-                customer communication.
-              </p>
-            </div>
+            <p className="text-sm text-gray-500">
+              Manage products, orders, payments
+              and customer communication.
+            </p>
           </div>
         </div>
 
@@ -761,7 +959,6 @@ export const ShopManager: React.FC = () => {
                 : ""
             }
           />
-
           Refresh
         </button>
       </div>
@@ -790,7 +987,9 @@ export const ShopManager: React.FC = () => {
 
             <button
               type="button"
-              onClick={() => setError(null)}
+              onClick={() =>
+                setError(null)
+              }
               className="font-bold"
             >
               <X size={18} />
@@ -853,8 +1052,9 @@ export const ShopManager: React.FC = () => {
               </h2>
 
               <p className="text-sm text-gray-500">
-                Every product has a direct public buying
-                link for advertisements and marketing.
+                Every product has a direct public
+                buying link for advertisements and
+                marketing.
               </p>
             </div>
 
@@ -889,13 +1089,14 @@ export const ShopManager: React.FC = () => {
             />
           </div>
 
-          {/* PRODUCT CARDS */}
+          {/* PRODUCT LIST */}
 
           {isLoading ? (
             <div className="rounded-xl border bg-white p-12 text-center text-gray-500">
               Loading products...
             </div>
-          ) : filteredProducts.length === 0 ? (
+          ) : filteredProducts.length ===
+            0 ? (
             <div className="rounded-xl border bg-white p-12 text-center">
               <Package
                 size={40}
@@ -907,7 +1108,8 @@ export const ShopManager: React.FC = () => {
               </h3>
 
               <p className="mt-1 text-sm text-gray-500">
-                Add your first product to start selling.
+                Add your first product to
+                start selling.
               </p>
             </div>
           ) : (
@@ -924,8 +1126,7 @@ export const ShopManager: React.FC = () => {
                       key={product.id}
                       className="overflow-hidden rounded-xl border bg-white shadow-sm"
                     >
-
-                      {/* PRODUCT IMAGE */}
+                      {/* IMAGE */}
 
                       {product.imageUrls?.[0] ? (
                         <div className="h-48 overflow-hidden bg-gray-100">
@@ -933,19 +1134,23 @@ export const ShopManager: React.FC = () => {
                             src={
                               product.imageUrls[0]
                             }
-                            alt={product.name}
+                            alt={
+                              product.name
+                            }
                             className="h-full w-full object-cover"
                           />
                         </div>
                       ) : (
                         <div className="flex h-48 items-center justify-center bg-gray-100 text-gray-400">
-                          <Package size={48} />
+                          <Package
+                            size={48}
+                          />
                         </div>
                       )}
 
                       <div className="space-y-4 p-5">
 
-                        {/* PRODUCT LINK AT TOP */}
+                        {/* PUBLIC LINK */}
 
                         <div className="rounded-lg border border-blue-200 bg-blue-50 p-3">
                           <div className="mb-1 flex items-center justify-between">
@@ -977,7 +1182,9 @@ export const ShopManager: React.FC = () => {
                               }
                               className="inline-flex shrink-0 items-center gap-1 rounded bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700"
                             >
-                              <Copy size={14} />
+                              <Copy
+                                size={14}
+                              />
 
                               {copiedProductId ===
                               product.id
@@ -1002,36 +1209,34 @@ export const ShopManager: React.FC = () => {
                           </button>
                         </div>
 
-                        {/* NAME */}
+                        {/* PRODUCT NAME */}
 
-                        <div>
-                          <div className="flex items-start justify-between gap-3">
-                            <div>
-                              <h3 className="text-lg font-bold text-gray-900">
-                                {product.name}
-                              </h3>
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <h3 className="text-lg font-bold text-gray-900">
+                              {product.name}
+                            </h3>
 
-                              {product.shortDescription && (
-                                <p className="mt-1 text-sm text-gray-500">
-                                  {
-                                    product.shortDescription
-                                  }
-                                </p>
-                              )}
-                            </div>
-
-                            <span
-                              className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${
-                                product.active
-                                  ? "bg-green-100 text-green-700"
-                                  : "bg-red-100 text-red-700"
-                              }`}
-                            >
-                              {product.active
-                                ? "Active"
-                                : "Inactive"}
-                            </span>
+                            {product.shortDescription && (
+                              <p className="mt-1 text-sm text-gray-500">
+                                {
+                                  product.shortDescription
+                                }
+                              </p>
+                            )}
                           </div>
+
+                          <span
+                            className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${
+                              product.active
+                                ? "bg-green-100 text-green-700"
+                                : "bg-red-100 text-red-700"
+                            }`}
+                          >
+                            {product.active
+                              ? "Active"
+                              : "Inactive"}
+                          </span>
                         </div>
 
                         {/* DETAILS */}
@@ -1046,7 +1251,9 @@ export const ShopManager: React.FC = () => {
                               $
                               {Number(
                                 product.price
-                              ).toFixed(2)}
+                              ).toFixed(
+                                2
+                              )}
                             </div>
                           </div>
 
@@ -1056,7 +1263,9 @@ export const ShopManager: React.FC = () => {
                             </div>
 
                             <div className="mt-1 text-lg font-bold">
-                              {product.stock}
+                              {
+                                product.stock
+                              }
                             </div>
                           </div>
                         </div>
@@ -1073,7 +1282,9 @@ export const ShopManager: React.FC = () => {
                             }
                             className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-50"
                           >
-                            <Edit size={16} />
+                            <Edit
+                              size={16}
+                            />
                             Edit
                           </button>
 
@@ -1086,7 +1297,9 @@ export const ShopManager: React.FC = () => {
                             }
                             className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-50"
                           >
-                            <Copy size={16} />
+                            <Copy
+                              size={16}
+                            />
                             Copy Link
                           </button>
 
@@ -1099,7 +1312,9 @@ export const ShopManager: React.FC = () => {
                             }
                             className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
                           >
-                            <Trash2 size={16} />
+                            <Trash2
+                              size={16}
+                            />
                             Delete
                           </button>
                         </div>
@@ -1126,8 +1341,8 @@ export const ShopManager: React.FC = () => {
             </h2>
 
             <p className="text-sm text-gray-500">
-              Confirm payments and communicate directly
-              with customers.
+              Confirm payments and communicate
+              directly with customers.
             </p>
           </div>
 
@@ -1147,14 +1362,17 @@ export const ShopManager: React.FC = () => {
               </h3>
 
               <p className="mt-1 text-sm text-gray-500">
-                New online orders will appear here.
+                New online orders will appear
+                here.
               </p>
             </div>
           ) : (
             <div className="space-y-4">
               {orders.map((order) => {
                 const confirmed =
-                  isPaymentConfirmed(order);
+                  isPaymentConfirmed(
+                    order
+                  );
 
                 const phone =
                   getCustomerPhone(order);
@@ -1172,7 +1390,7 @@ export const ShopManager: React.FC = () => {
 
                     <div className="flex flex-col gap-3 border-b bg-gray-50 p-4 md:flex-row md:items-center md:justify-between">
                       <div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           <span className="font-bold">
                             Order #{order.id}
                           </span>
@@ -1191,7 +1409,9 @@ export const ShopManager: React.FC = () => {
                         </div>
 
                         <div className="mt-1 flex items-center gap-1 text-xs text-gray-500">
-                          <Clock size={13} />
+                          <Clock
+                            size={13}
+                          />
 
                           {order.createdAt
                             ? new Date(
@@ -1235,8 +1455,6 @@ export const ShopManager: React.FC = () => {
                             "No email address"}
                         </div>
 
-                        {/* COMMUNICATION */}
-
                         <div className="mt-4 flex flex-wrap gap-2">
 
                           <button
@@ -1259,7 +1477,9 @@ export const ShopManager: React.FC = () => {
                             type="button"
                             disabled={!email}
                             onClick={() =>
-                              openEmail(order)
+                              openEmail(
+                                order
+                              )
                             }
                             className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
                           >
@@ -1277,10 +1497,11 @@ export const ShopManager: React.FC = () => {
                             }
                             className="inline-flex items-center gap-1.5 rounded-lg bg-gray-800 px-3 py-2 text-xs font-semibold text-white hover:bg-gray-900 disabled:cursor-not-allowed disabled:opacity-40"
                           >
-                            <Phone size={15} />
+                            <Phone
+                              size={15}
+                            />
                             Call
                           </button>
-
                         </div>
                       </div>
 
@@ -1296,8 +1517,7 @@ export const ShopManager: React.FC = () => {
                             ?.imageUrls?.[0] && (
                             <img
                               src={
-                                order
-                                  .product
+                                order.product
                                   .imageUrls[0]
                               }
                               alt={
@@ -1310,12 +1530,14 @@ export const ShopManager: React.FC = () => {
 
                           <div>
                             <div className="font-semibold">
-                              {order.product
+                              {order
+                                .product
                                 ?.name ||
                                 "Product unavailable"}
                             </div>
 
-                            {order.product?.price !==
+                            {order.product
+                              ?.price !==
                               undefined && (
                               <div className="mt-1 font-bold">
                                 $
@@ -1323,14 +1545,18 @@ export const ShopManager: React.FC = () => {
                                   order
                                     .product
                                     .price
-                                ).toFixed(2)}
+                                ).toFixed(
+                                  2
+                                )}
                               </div>
                             )}
                           </div>
                         </div>
 
                         <div className="mt-4 flex items-center gap-2 text-sm text-gray-600">
-                          <Truck size={16} />
+                          <Truck
+                            size={16}
+                          />
 
                           {formatDeliveryType(
                             order.deliveryType
@@ -1376,7 +1602,9 @@ export const ShopManager: React.FC = () => {
                             </div>
 
                             <div className="mt-1 text-sm text-yellow-900">
-                              {order.adminNote}
+                              {
+                                order.adminNote
+                              }
                             </div>
                           </div>
                         )}
@@ -1387,7 +1615,7 @@ export const ShopManager: React.FC = () => {
 
                     <div className="flex flex-wrap gap-2 border-t bg-gray-50 p-4">
 
-                      {!confirmed && (
+                      {!confirmed ? (
                         <button
                           type="button"
                           onClick={() =>
@@ -1402,9 +1630,7 @@ export const ShopManager: React.FC = () => {
                           />
                           Confirm Payment
                         </button>
-                      )}
-
-                      {confirmed && (
+                      ) : (
                         <span className="inline-flex items-center gap-2 rounded-lg bg-green-100 px-4 py-2.5 text-sm font-semibold text-green-700">
                           <CheckCircle2
                             size={17}
@@ -1481,14 +1707,18 @@ export const ShopManager: React.FC = () => {
                 </h2>
 
                 <p className="text-xs text-gray-500">
-                  Product information shown on the public shop.
+                  Product information shown on
+                  the public shop.
                 </p>
               </div>
 
               <button
                 type="button"
                 onClick={closeModal}
-                disabled={isSaving}
+                disabled={
+                  isSaving ||
+                  isUploadingImage
+                }
                 className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 disabled:opacity-50"
               >
                 <X size={21} />
@@ -1500,7 +1730,7 @@ export const ShopManager: React.FC = () => {
               className="space-y-5 p-6"
             >
 
-              {/* NAME */}
+              {/* PRODUCT NAME */}
 
               <div>
                 <label className="block text-sm font-semibold">
@@ -1510,12 +1740,17 @@ export const ShopManager: React.FC = () => {
                 <input
                   type="text"
                   required
-                  value={formData.name}
+                  value={
+                    formData.name
+                  }
                   onChange={(event) =>
-                    setFormData({
-                      ...formData,
-                      name: event.target.value,
-                    })
+                    setFormData(
+                      (previous) => ({
+                        ...previous,
+                        name: event.target
+                          .value,
+                      })
+                    )
                   }
                   className="mt-1 w-full rounded-lg border px-3 py-2.5 outline-none focus:border-blue-500"
                   placeholder="e.g. Blood Pressure Monitor"
@@ -1535,18 +1770,21 @@ export const ShopManager: React.FC = () => {
                     formData.shortDescription
                   }
                   onChange={(event) =>
-                    setFormData({
-                      ...formData,
-                      shortDescription:
-                        event.target.value,
-                    })
+                    setFormData(
+                      (previous) => ({
+                        ...previous,
+                        shortDescription:
+                          event.target
+                            .value,
+                      })
+                    )
                   }
                   className="mt-1 w-full rounded-lg border px-3 py-2.5 outline-none focus:border-blue-500"
                   placeholder="Short marketing description"
                 />
               </div>
 
-              {/* DESCRIPTION */}
+              {/* FULL DESCRIPTION */}
 
               <div>
                 <label className="block text-sm font-semibold">
@@ -1560,11 +1798,14 @@ export const ShopManager: React.FC = () => {
                     formData.description
                   }
                   onChange={(event) =>
-                    setFormData({
-                      ...formData,
-                      description:
-                        event.target.value,
-                    })
+                    setFormData(
+                      (previous) => ({
+                        ...previous,
+                        description:
+                          event.target
+                            .value,
+                      })
+                    )
                   }
                   className="mt-1 w-full rounded-lg border px-3 py-2.5 outline-none focus:border-blue-500"
                   placeholder="Full product description..."
@@ -1585,15 +1826,20 @@ export const ShopManager: React.FC = () => {
                     min="0"
                     step="0.01"
                     required
-                    value={formData.price}
+                    value={
+                      formData.price
+                    }
                     onChange={(event) =>
-                      setFormData({
-                        ...formData,
-                        price:
-                          Number(
-                            event.target.value
-                          ) || 0,
-                      })
+                      setFormData(
+                        (previous) => ({
+                          ...previous,
+                          price:
+                            Number(
+                              event.target
+                                .value
+                            ) || 0,
+                        })
+                      )
                     }
                     className="mt-1 w-full rounded-lg border px-3 py-2.5 outline-none focus:border-blue-500"
                   />
@@ -1608,46 +1854,134 @@ export const ShopManager: React.FC = () => {
                     type="number"
                     min="0"
                     required
-                    value={formData.stock}
+                    value={
+                      formData.stock
+                    }
                     onChange={(event) =>
-                      setFormData({
-                        ...formData,
-                        stock:
-                          Number(
-                            event.target.value
-                          ) || 0,
-                      })
+                      setFormData(
+                        (previous) => ({
+                          ...previous,
+                          stock:
+                            Number(
+                              event.target
+                                .value
+                            ) || 0,
+                        })
+                      )
                     }
                     className="mt-1 w-full rounded-lg border px-3 py-2.5 outline-none focus:border-blue-500"
                   />
                 </div>
-
               </div>
 
-              {/* IMAGE */}
+              {/* =================================================
+                  PRODUCT IMAGES
+              ================================================= */}
 
               <div>
-                <label className="block text-sm font-semibold">
-                  Product Image URL
+                <div className="mb-2 flex items-center justify-between">
+                  <label className="block text-sm font-semibold">
+                    Product Images
+                  </label>
+
+                  <span className="text-xs text-gray-500">
+                    JPG, PNG, WEBP or GIF • Max 5MB
+                  </span>
+                </div>
+
+                <label
+                  className={`flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed p-6 text-sm font-semibold transition ${
+                    isUploadingImage
+                      ? "cursor-not-allowed bg-gray-50 text-gray-400"
+                      : "border-blue-300 text-blue-600 hover:bg-blue-50"
+                  }`}
+                >
+                  {isUploadingImage ? (
+                    <>
+                      <Loader2
+                        size={20}
+                        className="animate-spin"
+                      />
+                      Uploading image...
+                    </>
+                  ) : (
+                    <>
+                      <Upload size={20} />
+                      Upload Product Image
+                    </>
+                  )}
+
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    className="hidden"
+                    disabled={
+                      isUploadingImage
+                    }
+                    onChange={
+                      handleImageUpload
+                    }
+                  />
                 </label>
 
-                <input
-                  type="url"
-                  value={
-                    formData.imageUrls[0] ||
-                    ""
-                  }
-                  onChange={(event) =>
-                    setFormData({
-                      ...formData,
-                      imageUrls: [
-                        event.target.value,
-                      ],
-                    })
-                  }
-                  className="mt-1 w-full rounded-lg border px-3 py-2.5 outline-none focus:border-blue-500"
-                  placeholder="https://..."
-                />
+                {/* IMAGE PREVIEWS */}
+
+                {formData.imageUrls
+                  .length > 0 && (
+                  <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    {formData.imageUrls.map(
+                      (
+                        imageUrl,
+                        index
+                      ) => (
+                        <div
+                          key={`${imageUrl}-${index}`}
+                          className="group relative overflow-hidden rounded-xl border bg-gray-100"
+                        >
+                          <img
+                            src={imageUrl}
+                            alt={`Product image ${
+                              index + 1
+                            }`}
+                            className="h-32 w-full object-cover"
+                          />
+
+                          {index ===
+                            0 && (
+                            <span className="absolute left-2 top-2 rounded-full bg-blue-600 px-2 py-1 text-[10px] font-bold text-white">
+                              Main Image
+                            </span>
+                          )}
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              removeImage(
+                                index
+                              )
+                            }
+                            className="absolute right-2 top-2 rounded-full bg-red-600 p-1.5 text-white opacity-0 shadow transition group-hover:opacity-100"
+                            title="Remove image"
+                          >
+                            <X
+                              size={14}
+                            />
+                          </button>
+                        </div>
+                      )
+                    )}
+                  </div>
+                )}
+
+                {formData.imageUrls
+                  .length === 0 && (
+                  <div className="mt-3 flex items-center gap-2 rounded-lg bg-gray-50 p-3 text-xs text-gray-500">
+                    <ImagePlus
+                      size={16}
+                    />
+                    No product image uploaded yet.
+                  </div>
+                )}
               </div>
 
               {/* ACTIVE */}
@@ -1659,11 +1993,14 @@ export const ShopManager: React.FC = () => {
                     formData.active
                   }
                   onChange={(event) =>
-                    setFormData({
-                      ...formData,
-                      active:
-                        event.target.checked,
-                    })
+                    setFormData(
+                      (previous) => ({
+                        ...previous,
+                        active:
+                          event.target
+                            .checked,
+                      })
+                    )
                   }
                   className="h-4 w-4"
                 />
@@ -1674,7 +2011,8 @@ export const ShopManager: React.FC = () => {
                   </div>
 
                   <div className="text-xs text-gray-500">
-                    Active products can appear in the public shop.
+                    Active products can appear
+                    in the public shop.
                   </div>
                 </div>
               </label>
@@ -1685,7 +2023,10 @@ export const ShopManager: React.FC = () => {
                 <button
                   type="button"
                   onClick={closeModal}
-                  disabled={isSaving}
+                  disabled={
+                    isSaving ||
+                    isUploadingImage
+                  }
                   className="rounded-lg border px-5 py-2.5 font-semibold hover:bg-gray-50 disabled:opacity-50"
                 >
                   Cancel
@@ -1693,7 +2034,10 @@ export const ShopManager: React.FC = () => {
 
                 <button
                   type="submit"
-                  disabled={isSaving}
+                  disabled={
+                    isSaving ||
+                    isUploadingImage
+                  }
                   className="rounded-lg bg-blue-600 px-5 py-2.5 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isSaving
@@ -1724,7 +2068,8 @@ export const ShopManager: React.FC = () => {
                 </h2>
 
                 <p className="mt-1 text-sm text-gray-500">
-                  Order #{selectedOrder.id}
+                  Order #
+                  {selectedOrder.id}
                 </p>
               </div>
 
@@ -1733,7 +2078,9 @@ export const ShopManager: React.FC = () => {
                 onClick={() =>
                   setSelectedOrder(null)
                 }
-                disabled={isConfirming}
+                disabled={
+                  isConfirming
+                }
                 className="rounded-lg p-2 hover:bg-gray-100"
               >
                 <X size={20} />
@@ -1785,7 +2132,8 @@ export const ShopManager: React.FC = () => {
                   }
                   onChange={(event) =>
                     setConfirmationNote(
-                      event.target.value
+                      event.target
+                        .value
                     )
                   }
                   placeholder="Example: Payment received. Customer requested delivery after 4 PM."
@@ -1793,8 +2141,9 @@ export const ShopManager: React.FC = () => {
                 />
 
                 <p className="mt-1 text-xs text-gray-500">
-                  The note will be saved with the order and
-                  included in the WhatsApp confirmation.
+                  The note will be saved with the
+                  order and included in the WhatsApp
+                  confirmation.
                 </p>
               </div>
 
@@ -1811,9 +2160,9 @@ export const ShopManager: React.FC = () => {
                     </strong>
 
                     <p className="mt-1">
-                      After confirmation, WhatsApp will
-                      open with a ready-to-send payment
-                      confirmation message.
+                      After confirmation, WhatsApp
+                      will open with a ready-to-send
+                      payment confirmation message.
                     </p>
                   </div>
                 </div>
@@ -1823,9 +2172,13 @@ export const ShopManager: React.FC = () => {
                 <button
                   type="button"
                   onClick={() =>
-                    setSelectedOrder(null)
+                    setSelectedOrder(
+                      null
+                    )
                   }
-                  disabled={isConfirming}
+                  disabled={
+                    isConfirming
+                  }
                   className="rounded-lg border px-5 py-2.5 font-semibold hover:bg-gray-50"
                 >
                   Cancel
@@ -1833,25 +2186,34 @@ export const ShopManager: React.FC = () => {
 
                 <button
                   type="button"
-                  onClick={confirmPayment}
-                  disabled={isConfirming}
+                  onClick={
+                    confirmPayment
+                  }
+                  disabled={
+                    isConfirming
+                  }
                   className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-5 py-2.5 font-bold text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <CheckCircle2
-                    size={18}
-                  />
+                  {isConfirming ? (
+                    <Loader2
+                      size={18}
+                      className="animate-spin"
+                    />
+                  ) : (
+                    <CheckCircle2
+                      size={18}
+                    />
+                  )}
 
                   {isConfirming
                     ? "Confirming..."
                     : "Confirm & Notify"}
                 </button>
               </div>
-
             </div>
           </div>
         </div>
       )}
-
     </div>
   );
 };
