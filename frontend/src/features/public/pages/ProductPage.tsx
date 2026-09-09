@@ -161,7 +161,7 @@ export default function ProductPage() {
 
               {product.stock > 0 ? (
                 <Link
-                  to={/shop?product=}
+                  to={`/shop?product=${product.id}`}
                   className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
                 >
                   <ShoppingCart className="w-5 h-5" />
@@ -186,3 +186,4 @@ export default function ProductPage() {
     </div>
   );
 }
+
