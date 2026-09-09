@@ -6,6 +6,7 @@ import doctorManagementRouter from "./routes/doctorManagement.js";
 import galleryManagerRouter from "./routes/gallerymanager.js";
 import appointmentsRouter from "./routes/appointments.js";
 import servicesManagerRouter from "./routes/servicesmanager.js";
+import { shopRoutes } from "./modules/shop/shop.routes.js";
 
 const app = express();
 
@@ -23,10 +24,11 @@ app.use(
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
+app.use('/api/shop', shopRoutes);
+
 /* =========================================================
    STATIC UPLOADS
 ========================================================= */
-
 
 const uploadsDirectory = path.resolve(
   process.cwd(),
@@ -53,12 +55,10 @@ app.get("/api/health", (_req, res) => {
    DOCTORS
 ========================================================= */
 
-
 app.use(
   "/api/doctors",
   doctorManagementRouter
 );
-
 
 app.use(
   "/api/admin/doctors",
@@ -139,9 +139,3 @@ app.listen(PORT, () => {
   console.log("==============================================");
   console.log("");
 });
-
-
-
-
-
-// Render redeploy trigger

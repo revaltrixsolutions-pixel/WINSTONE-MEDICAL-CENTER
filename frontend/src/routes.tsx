@@ -13,6 +13,8 @@ import HospitalDoctors from "@/features/admin/pages/HospitalDoctors.tsx";
 import Doctors from "@/features/public/pages/Doctors.tsx";
 import TermsPage from "@/features/public/pages/TermsPage.tsx";
 import PrivacyPage from "@/features/public/pages/PrivacyPage.tsx";
+import ShopPage from "@/features/public/pages/ShopPage.tsx";
+import AdminShopPage from "@/features/admin/pages/AdminShopPage.tsx";
 
 export function AppRoutes() {
   return (
@@ -24,12 +26,14 @@ export function AppRoutes() {
       <Route path="/doctors" element={<Doctors />} />
       <Route path="/gallery" element={<HospitalGallery />} />
       <Route path="/appointment" element={<AppointmentPage />} />
+      <Route path="/shop" element={<ShopPage />} />
 
       {/* Admin Pages */}
       <Route path="/admindashboard" element={<AdminDashboard />} />
       <Route path="/admin/services" element={<AdminServices />} />
       <Route path="/admin/gallery" element={<AdminGallery />} />
       <Route path="/admin/doctors" element={<HospitalDoctors />} />
+      <Route path="/admin/shop" element={<AdminShopPage />} />
       <Route path="/appointments" element={<AdminAppointments />} />
 
       {/* Legal Pages */}

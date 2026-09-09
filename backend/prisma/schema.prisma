@@ -36,9 +36,9 @@ model Doctor {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  messages     PatientMessage[]
-  ratings      DoctorRating[]
-  appointments Appointment[]
+  messages       PatientMessage[]
+  ratings        DoctorRating[]
+  appointments   Appointment[]
 
   @@map("doctors")
 }
@@ -93,7 +93,7 @@ model Appointment {
   patientPhone String
   patientEmail String?
 
-  doctorId   String?
+  doctorId    String?
   department String?
   service    String?
 
@@ -116,4 +116,41 @@ model Appointment {
   @@index([appointmentDate])
   @@index([status])
   @@map("appointments")
+}
+
+model Product {
+  id               String   @id @default(uuid())
+  name             String   @unique
+  shortDescription String?
+  description      String
+  price            Float
+  imageUrls        String[]
+  stock            Int      @default(0)
+  active           Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  orders           Order[]
+
+  @@map("products")
+}
+
+model Order {
+  id            String   @id @default(uuid())
+  productId     String
+  customerName  String
+  customerPhone String
+  customerEmail String?
+  paymentMethod String   // "PAY_NOW" or "PAY_LATTER"
+  paymentId     String?  // Transaction ID if PAY_NOW
+  deliveryType  String   // "WHATSAPP_1HR" or "STANDARD_5HR"
+  status        String   @default("PENDING") // PENDING, CONFIRMED, COMPLETED
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  product       Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@index([status])
+  @@map("orders")
 }

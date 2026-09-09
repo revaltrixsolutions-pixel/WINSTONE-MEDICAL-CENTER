@@ -5,6 +5,7 @@ import doctorManagementRouter from "./routes/doctorManagement.js";
 import galleryManagerRouter from "./routes/gallerymanager.js";
 import appointmentsRouter from "./routes/appointments.js";
 import servicesManagerRouter from "./routes/servicesmanager.js";
+import { shopRoutes } from "./modules/shop/shop.routes.js";
 const app = express();
 /* =========================================================
    MIDDLEWARE
@@ -13,6 +14,7 @@ app.use(cors({
     origin: true,
     credentials: true,
 }));
+app.use('/api/shop', shopRoutes);
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 /* =========================================================

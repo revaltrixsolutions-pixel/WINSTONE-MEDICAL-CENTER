@@ -5,6 +5,7 @@
   Menu,
   Phone,
   Shield,
+  ShoppingBag,
   Sparkles,
   Stethoscope,
   UserCheck,
@@ -25,6 +26,7 @@ type MenuItem = {
 const navigation: MenuItem[] = [
   { name: "Home", href: "/", icon: Hospital },
   { name: "Services", href: "/services", icon: Stethoscope },
+  { name: "Shop", href: "/shop", icon: ShoppingBag },
   { name: "Gallery", href: "/gallery", icon: Sparkles },
   { name: "About", href: "/about", icon: Hospital },
   { name: "Doctors", href: "/doctors", icon: UserCheck },
@@ -151,6 +153,18 @@ function HomepageHeader() {
       {mobileOpen && (
         <div className="fixed left-0 right-0 top-[57px] z-40 border-b border-slate-200 bg-white px-4 pb-4 pt-2 shadow-lg lg:hidden">
           <nav className="mx-auto max-w-7xl">
+            {/* Top info strip in mobile drawer displaying phone number */}
+            <div className="mb-3 pb-3 border-b border-slate-100 flex items-center justify-between">
+              <span className="text-xs text-slate-500 font-medium">Need Immediate Help?</span>
+              <a
+                href="tel:+254708130100"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-1.5 rounded-lg"
+              >
+                <Phone size={13} />
+                <span>+254 708 130 100</span>
+              </a>
+            </div>
+
             <div className="grid grid-cols-2 gap-2">
               {navigation.map((item) => {
                 const active = isActive(item.href);
@@ -176,18 +190,18 @@ function HomepageHeader() {
               <Link
                 to="/appointment"
                 onClick={closeMenu}
-                className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-sm font-bold text-white"
+                className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-sm font-bold text-white shadow"
               >
                 <Calendar size={16} />
-                <span>Book</span>
+                <span>Book Appointment</span>
               </Link>
 
               <a
                 href="tel:+254708130100"
-                className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 py-3 text-sm font-bold text-slate-700"
+                className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 py-3 text-sm font-bold text-slate-700 hover:bg-slate-100"
               >
                 <Phone size={16} className="text-blue-600" />
-                <span>Call</span>
+                <span>Call Us</span>
               </a>
             </div>
           </nav>
@@ -198,12 +212,3 @@ function HomepageHeader() {
 }
 
 export default HomepageHeader;
-
-
-
-
-
-
-
-
-
