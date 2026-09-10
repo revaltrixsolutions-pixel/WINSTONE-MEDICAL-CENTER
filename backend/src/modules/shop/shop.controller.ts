@@ -308,8 +308,7 @@ export class ShopController {
         return;
       }
 
-      const imageUrl =
-        `/uploads/shop/${req.file.filename}`;
+      const imageUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
 
       res.status(201).json({
         success: true,
