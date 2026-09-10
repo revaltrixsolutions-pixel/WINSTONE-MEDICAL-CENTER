@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import path from "path";
+import { uploadsDirectory } from "./config/uploads.js";
 
 import doctorManagementRouter from "./routes/doctorManagement.js";
 import galleryManagerRouter from "./routes/gallerymanager.js";
@@ -32,11 +32,6 @@ app.use(
 /* =========================================================
    STATIC UPLOADS
 ========================================================= */
-
-const uploadsDirectory = path.resolve(
-  process.cwd(),
-  "uploads"
-);
 
 app.use(
   "/uploads",

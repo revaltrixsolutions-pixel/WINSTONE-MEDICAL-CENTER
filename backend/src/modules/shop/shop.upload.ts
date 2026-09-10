@@ -1,12 +1,9 @@
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import { shopUploadsDirectory } from "../../config/uploads.js";
 
-const uploadsDirectory = path.resolve(
-  process.cwd(),
-  "uploads",
-  "shop"
-);
+const uploadsDirectory = shopUploadsDirectory;
 
 if (!fs.existsSync(uploadsDirectory)) {
   fs.mkdirSync(uploadsDirectory, {

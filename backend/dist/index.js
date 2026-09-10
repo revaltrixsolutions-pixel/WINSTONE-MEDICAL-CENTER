@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import path from "path";
+import { uploadsDirectory } from "./config/uploads.js";
 import doctorManagementRouter from "./routes/doctorManagement.js";
 import galleryManagerRouter from "./routes/gallerymanager.js";
 import appointmentsRouter from "./routes/appointments.js";
@@ -22,7 +22,6 @@ app.use(express.urlencoded({
 /* =========================================================
    STATIC UPLOADS
 ========================================================= */
-const uploadsDirectory = path.resolve(process.cwd(), "uploads");
 app.use("/uploads", express.static(uploadsDirectory));
 /* =========================================================
    HEALTH CHECK
