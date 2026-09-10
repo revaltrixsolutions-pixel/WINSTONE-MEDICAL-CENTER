@@ -1,6 +1,7 @@
 ﻿import React, { useRef, useState } from "react";
 import { shopApi } from "../../../../api/shop";
 import type { Product } from "../../../../api/shop";
+import { getImageUrl } from "../../../../api/axios";
 
 interface Props {
   product: Product;
@@ -205,7 +206,7 @@ export const ProductPopup: React.FC<Props> = ({ product, onClose }) => {
               <h2 className="text-2xl font-extrabold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">{product.name}</h2>
             </div>
             {product.imageUrls[0] && (
-              <img src={product.imageUrls[0]} alt={product.name} className="w-full h-64 object-cover rounded-2xl mb-5 shadow-md border border-slate-200" />
+              <img src={getImageUrl(product.imageUrls[0])} alt={product.name} className="w-full h-64 object-cover rounded-2xl mb-5 shadow-md border border-slate-200" />
             )}
             <p className="text-slate-700 mb-2 font-semibold">{product.shortDescription}</p>
             <p className="text-slate-500 text-sm mb-5 leading-relaxed">{product.description}</p>

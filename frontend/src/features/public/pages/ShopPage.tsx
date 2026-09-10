@@ -1,6 +1,7 @@
 ﻿import React, { useEffect, useState } from "react";
 import { shopApi } from "../../../api/shop";
 import type { Product } from "../../../api/shop";
+import { getImageUrl } from "../../../api/axios";
 import ProductPopup from "../components/shop/ProductPopup";
 
 
@@ -45,7 +46,7 @@ export const ShopPage: React.FC = () => {
               {product.imageUrls[0] && (
                 <div className="relative overflow-hidden">
                   <img 
-                    src={product.imageUrls[0]} 
+                    src={getImageUrl(product.imageUrls[0])} 
                     alt={product.name} 
                     className="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-300" 
                   />

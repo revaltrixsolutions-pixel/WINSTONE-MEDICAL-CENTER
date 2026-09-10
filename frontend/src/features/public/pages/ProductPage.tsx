@@ -2,6 +2,7 @@
 import { ArrowLeft, ShoppingCart, Package, Loader2 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { shopApi, type Product } from "@/api/shop";
+import { getImageUrl } from "@/api/axios";
 
 export default function ProductPage() {
   const { id } = useParams<{ id: string }>();
@@ -104,7 +105,7 @@ export default function ProductPage() {
             <div className="bg-gray-100 min-h-[400px] flex items-center justify-center">
               {image ? (
                 <img
-                  src={image}
+                  src={getImageUrl(image)}
                   alt={product.name}
                   className="w-full h-full max-h-[600px] object-contain"
                 />

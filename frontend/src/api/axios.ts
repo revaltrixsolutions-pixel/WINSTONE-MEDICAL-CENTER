@@ -5,7 +5,7 @@ const API_BASE_URL = (
   "https://winstone-medical-center-1.onrender.com"
 ).replace(/^http:\/\//i, "https://");
 
-const normalizeImageUrl = (value: string): string => {
+export const getImageUrl = (value: string): string => {
   if (value.startsWith("http://")) {
     return `https://${value.slice("http://".length)}`;
   }
@@ -32,11 +32,11 @@ const normalizeImageFields = (value: unknown): unknown => {
     const field = normalized[key];
 
     if (typeof field === "string") {
-      normalized[key] = normalizeImageUrl(field);
+      normalized[key] = getImageUrl(field);
     } else if (Array.isArray(field)) {
       normalized[key] = field.map((item) =>
         typeof item === "string"
-          ? normalizeImageUrl(item)
+          ? getImageUrl(item)
           : item
       );
     }
