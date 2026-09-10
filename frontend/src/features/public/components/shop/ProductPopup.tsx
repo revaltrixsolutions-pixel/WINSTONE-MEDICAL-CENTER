@@ -106,8 +106,8 @@ export const ProductPopup: React.FC<Props> = ({ product, onClose }) => {
               {paymentMethod === "PAY_NOW" && (
                 <div className="mb-4 bg-blue-50/70 p-4 rounded-xl border border-blue-200">
                   <p className="text-sm font-semibold text-blue-900 mb-1">Account Details for Transfer:</p>
-                  <p className="text-sm text-blue-800">Bank: Equity Bank / M-Pesa Till: 123456</p>
-                  <p className="text-sm text-blue-800 mb-3">Account Name: Winstone Medical Centre</p>
+                  <p className="text-sm text-blue-800">Pay Bill No.: 100400</p>
+                  <p className="text-sm text-blue-800 mb-3">Account No.: WMC</p>
                   <label className="block text-sm font-medium text-slate-700">Enter Payment ID / Transaction Code</label>
                   <input type="text" required value={paymentId} onChange={e => setPaymentId(e.target.value)} className="w-full border border-slate-200 rounded-xl p-2.5 mt-1 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. QHX8923XYZ" />
                 </div>

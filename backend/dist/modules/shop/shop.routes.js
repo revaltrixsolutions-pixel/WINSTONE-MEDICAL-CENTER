@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { ShopController } from "./shop.controller.js";
+import { shopUpload } from "./shop.upload.js";
 const router = Router();
 const shopController = new ShopController();
 /* =========================================================
@@ -14,6 +15,10 @@ router.get("/admin/products", shopController.getAdminProducts);
 router.post("/admin/products", shopController.createProduct);
 router.put("/admin/products/:id", shopController.updateProduct);
 router.delete("/admin/products/:id", shopController.deleteProduct);
+/* =========================================================
+   ADMIN PRODUCT IMAGE UPLOAD
+========================================================= */
+router.post("/admin/products/upload-image", shopUpload.single("image"), shopController.uploadProductImage);
 /* =========================================================
    ADMIN ORDERS
 ========================================================= */
