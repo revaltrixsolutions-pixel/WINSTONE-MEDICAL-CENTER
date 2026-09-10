@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { shopApi } from "../../../api/shop";
 import type { Product } from "../../../api/shop";
 import ProductPopup from "../components/shop/ProductPopup";
@@ -65,7 +65,7 @@ export const ShopPage: React.FC = () => {
                     onClick={() => setSelectedProduct(product)}
                     className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-5 py-2.5 rounded-xl font-bold hover:from-blue-700 hover:to-purple-700 transition shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                   >
-                    Book Now
+                    Buy Now
                   </button>
                 </div>
               </div>
