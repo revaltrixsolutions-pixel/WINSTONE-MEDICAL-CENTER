@@ -11,6 +11,42 @@ const prisma = new PrismaClient();
 
 export class ShopService {
   /* =========================================================
+     RESPONSE SHAPING
+     The DB stores delivery location as flat columns
+     (locationCounty, locationTown, ...). The frontend expects
+     a nested `location: { county, town, ... }` object, so every
+     order returned to a client goes through this formatter.
+  ========================================================= */
+
+  private formatOrder(order: any) {
+    if (!order) return order;
+
+    const {
+      locationCounty,
+      locationTown,
+      locationPlace,
+      locationRoad,
+      locationBuilding,
+      locationLat,
+      locationLng,
+      ...rest
+    } = order;
+
+    return {
+      ...rest,
+      location: {
+        county: locationCounty,
+        town: locationTown,
+        place: locationPlace,
+        road: locationRoad,
+        building: locationBuilding,
+        lat: locationLat,
+        lng: locationLng,
+      },
+    };
+  }
+
+  /* =========================================================
      PUBLIC PRODUCTS
   ========================================================= */
 
@@ -144,9 +180,39 @@ export class ShopService {
       );
     }
 
-    return await prisma.order.create({
+    const quantity =
+      Number.isInteger(data.quantity) &&
+      (data.quantity as number) > 0
+        ? (data.quantity as number)
+        : 1;
+
+    if (quantity > product.stock) {
+      throw new Error(
+        `Only ${product.stock} unit(s) of this product are left in stock.`
+      );
+    }
+
+    const location = data.location;
+
+    if (
+      !location ||
+      !location.county?.trim() ||
+      !location.town?.trim() ||
+      !location.place?.trim() ||
+      !location.road?.trim()
+    ) {
+      throw new Error(
+        "Delivery location (county, town, place and road) is required."
+      );
+    }
+
+    const created = await prisma.order.create({
       data: {
         productId: data.productId,
+
+        quantity,
+        customerNote:
+          data.customerNote?.trim() || null,
 
         customerName:
           data.customerName.trim(),
@@ -156,6 +222,21 @@ export class ShopService {
 
         customerEmail:
           data.customerEmail?.trim() || null,
+
+        locationCounty: location.county.trim(),
+        locationTown: location.town.trim(),
+        locationPlace: location.place.trim(),
+        locationRoad: location.road.trim(),
+        locationBuilding:
+          location.building?.trim() || null,
+        locationLat:
+          typeof location.lat === "number"
+            ? location.lat
+            : null,
+        locationLng:
+          typeof location.lng === "number"
+            ? location.lng
+            : null,
 
         paymentMethod:
           data.paymentMethod,
@@ -173,6 +254,8 @@ export class ShopService {
         product: true,
       },
     });
+
+    return this.formatOrder(created);
   }
 
   /* =========================================================
@@ -180,7 +263,7 @@ export class ShopService {
   ========================================================= */
 
   async getAdminOrders() {
-    return await prisma.order.findMany({
+    const orders = await prisma.order.findMany({
       include: {
         product: true,
       },
@@ -189,6 +272,10 @@ export class ShopService {
         createdAt: "desc",
       },
     });
+
+    return orders.map((order) =>
+      this.formatOrder(order)
+    );
   }
 
   /* =========================================================
@@ -214,7 +301,7 @@ export class ShopService {
     }
 
     if (order.status === "CONFIRMED") {
-      return order;
+      return this.formatOrder(order);
     }
 
     const updatedOrder =
@@ -238,7 +325,7 @@ export class ShopService {
         },
       });
 
-    return updatedOrder;
+    return this.formatOrder(updatedOrder);
   }
 
   /* =========================================================
@@ -249,7 +336,7 @@ export class ShopService {
     id: string,
     note: string
   ) {
-    return await prisma.order.update({
+    const updatedOrder = await prisma.order.update({
       where: {
         id,
       },
@@ -263,6 +350,8 @@ export class ShopService {
         product: true,
       },
     });
+
+    return this.formatOrder(updatedOrder);
   }
 
   /* =========================================================
@@ -286,7 +375,7 @@ export class ShopService {
       );
     }
 
-    return await prisma.order.update({
+    const updatedOrder = await prisma.order.update({
       where: {
         id,
       },
@@ -299,5 +388,7 @@ export class ShopService {
         product: true,
       },
     });
+
+    return this.formatOrder(updatedOrder);
   }
 }

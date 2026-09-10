@@ -21,10 +21,14 @@ import {
   Upload,
   ImagePlus,
   Loader2,
+  MapPin,
+  Hash,
+  StickyNote,
+  Navigation,
 } from "lucide-react";
 
 import { shopApi } from "../../../../api/shop";
-import type { Product } from "../../../../api/shop";
+import type { Order, Product } from "../../../../api/shop";
 
 /* =========================================================
    TYPES
@@ -38,45 +42,6 @@ interface ProductForm {
   stock: number;
   imageUrls: string[];
   active: boolean;
-}
-
-interface Customer {
-  id?: string;
-  name?: string;
-  phone?: string;
-  email?: string;
-}
-
-interface Order {
-  id: string;
-  customerName: string;
-  customerPhone: string;
-  customerEmail?: string;
-
-  paymentMethod: string;
-  paymentId?: string;
-
-  deliveryType: string;
-
-  createdAt: string;
-
-  status?: string;
-  paymentStatus?: string;
-
-  note?: string;
-  adminNote?: string;
-
-  confirmedAt?: string;
-  confirmedBy?: string;
-
-  customer?: Customer;
-
-  product?: {
-    id?: string;
-    name: string;
-    price?: number;
-    imageUrls?: string[];
-  };
 }
 
 /* =========================================================
@@ -123,6 +88,50 @@ const getCustomerEmail = (order: Order) =>
   order.customer?.email ||
   order.customerEmail ||
   "";
+
+const getOrderQuantity = (order: Order) =>
+  Number.isFinite(order.quantity)
+    ? (order.quantity as number)
+    : 1;
+
+const getOrderNote = (order: Order) =>
+  order.customerNote || order.note || "";
+
+const getOrderLocation = (
+  order: Order
+): NonNullable<Order["location"]> =>
+  order.location || {};
+
+const getOrderLocationText = (order: Order) => {
+  const location = getOrderLocation(order);
+
+  const parts = [
+    location.county,
+    location.town,
+    location.place,
+    location.road,
+    location.building,
+  ].filter((part) => part && part.trim());
+
+  return parts.length
+    ? parts.join(", ")
+    : "No delivery address provided";
+};
+
+const getOrderMapsLink = (order: Order) => {
+  const location = getOrderLocation(order);
+
+  if (
+    location.lat === undefined ||
+    location.lat === null ||
+    location.lng === undefined ||
+    location.lng === null
+  ) {
+    return null;
+  }
+
+  return `https://www.google.com/maps?q=${location.lat},${location.lng}`;
+};
 
 const formatPaymentMethod = (value?: string) => {
   if (!value) return "Unknown";
@@ -829,6 +838,10 @@ export const ShopManager: React.FC = () => {
         previous.map((order) =>
           order.id === selectedOrder.id
             ? {
+                // Spread the full backend response first so every
+                // field it returns (quantity, customerNote, location,
+                // product, etc.) is kept, then layer local fallbacks
+                // only for fields the API might omit.
                 ...order,
                 ...updatedOrder,
                 paymentStatus:
@@ -838,6 +851,7 @@ export const ShopManager: React.FC = () => {
                   updatedOrder?.status ||
                   "CONFIRMED",
                 adminNote:
+                  updatedOrder?.adminNote ??
                   confirmationNote.trim(),
                 confirmedAt:
                   updatedOrder?.confirmedAt ||
@@ -1380,6 +1394,20 @@ export const ShopManager: React.FC = () => {
                 const email =
                   getCustomerEmail(order);
 
+                const quantity =
+                  getOrderQuantity(order);
+
+                const orderNote =
+                  getOrderNote(order);
+
+                const locationText =
+                  getOrderLocationText(
+                    order
+                  );
+
+                const mapsLink =
+                  getOrderMapsLink(order);
+
                 return (
                   <div
                     key={order.id}
@@ -1421,9 +1449,20 @@ export const ShopManager: React.FC = () => {
                         </div>
                       </div>
 
-                      <div className="text-sm font-semibold">
-                        {formatStatus(
-                          order.status
+                      <div className="text-right">
+                        <div className="text-sm font-semibold">
+                          {formatStatus(
+                            order.status
+                          )}
+                        </div>
+
+                        {order.confirmedAt && (
+                          <div className="mt-1 text-xs text-gray-500">
+                            Confirmed{" "}
+                            {new Date(
+                              order.confirmedAt
+                            ).toLocaleString()}
+                          </div>
                         )}
                       </div>
                     </div>
@@ -1550,10 +1589,68 @@ export const ShopManager: React.FC = () => {
                                 )}
                               </div>
                             )}
+
+                            {order.product
+                              ?.shortDescription && (
+                              <div className="mt-1 text-xs text-gray-500">
+                                {
+                                  order
+                                    .product
+                                    .shortDescription
+                                }
+                              </div>
+                            )}
+
+                            {order.product
+                              ?.stock !==
+                              undefined && (
+                              <div className="mt-1 text-xs text-gray-500">
+                                Stock remaining:{" "}
+                                <strong>
+                                  {
+                                    order
+                                      .product
+                                      .stock
+                                  }
+                                </strong>
+                              </div>
+                            )}
                           </div>
                         </div>
 
-                        <div className="mt-4 flex items-center gap-2 text-sm text-gray-600">
+                        {/* QUANTITY */}
+
+                        <div className="mt-3 flex items-center gap-2 text-sm text-gray-700">
+                          <Hash size={15} />
+                          <span>
+                            Quantity:{" "}
+                            <strong>
+                              {quantity}
+                            </strong>
+                          </span>
+                        </div>
+
+                        {/* ORDER TOTAL */}
+
+                        {order.product
+                          ?.price !==
+                          undefined && (
+                          <div className="mt-1 text-sm text-gray-700">
+                            Order Total:{" "}
+                            <strong>
+                              KSh 
+                              {(
+                                Number(
+                                  order
+                                    .product
+                                    .price
+                                ) * quantity
+                              ).toFixed(2)}
+                            </strong>
+                          </div>
+                        )}
+
+                        <div className="mt-3 flex items-center gap-2 text-sm text-gray-600">
                           <Truck
                             size={16}
                           />
@@ -1562,6 +1659,23 @@ export const ShopManager: React.FC = () => {
                             order.deliveryType
                           )}
                         </div>
+
+                        {/* CUSTOMER ORDER NOTE */}
+
+                        {orderNote && (
+                          <div className="mt-3 rounded-lg border border-blue-200 bg-blue-50 p-3">
+                            <div className="flex items-center gap-1.5 text-xs font-bold uppercase text-blue-800">
+                              <StickyNote
+                                size={13}
+                              />
+                              Customer Note
+                            </div>
+
+                            <div className="mt-1 text-sm text-blue-900">
+                              {orderNote}
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                       {/* PAYMENT */}
@@ -1609,6 +1723,107 @@ export const ShopManager: React.FC = () => {
                           </div>
                         )}
                       </div>
+                    </div>
+
+                    {/* =================================================
+                        DELIVERY LOCATION (full data captured at checkout)
+                    ================================================= */}
+
+                    <div className="border-t bg-gray-50 p-5">
+                      <h3 className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-gray-500">
+                        <MapPin size={15} />
+                        Delivery Location
+                      </h3>
+
+                      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                        <div className="rounded-lg border bg-white p-3">
+                          <div className="text-xs text-gray-500">
+                            County
+                          </div>
+                          <div className="mt-1 text-sm font-semibold text-gray-800">
+                            {getOrderLocation(
+                              order
+                            ).county ||
+                              "�"}
+                          </div>
+                        </div>
+
+                        <div className="rounded-lg border bg-white p-3">
+                          <div className="text-xs text-gray-500">
+                            Town
+                          </div>
+                          <div className="mt-1 text-sm font-semibold text-gray-800">
+                            {getOrderLocation(
+                              order
+                            ).town || "�"}
+                          </div>
+                        </div>
+
+                        <div className="rounded-lg border bg-white p-3">
+                          <div className="text-xs text-gray-500">
+                            Place/Area
+                          </div>
+                          <div className="mt-1 text-sm font-semibold text-gray-800">
+                            {getOrderLocation(
+                              order
+                            ).place || "�"}
+                          </div>
+                        </div>
+
+                        <div className="rounded-lg border bg-white p-3">
+                          <div className="text-xs text-gray-500">
+                            Road/Street
+                          </div>
+                          <div className="mt-1 text-sm font-semibold text-gray-800">
+                            {getOrderLocation(
+                              order
+                            ).road || "�"}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                        <div className="rounded-lg border bg-white p-3">
+                          <div className="text-xs text-gray-500">
+                            Building/House Name
+                          </div>
+                          <div className="mt-1 text-sm font-semibold text-gray-800">
+                            {getOrderLocation(
+                              order
+                            ).building ||
+                              "�"}
+                          </div>
+                        </div>
+
+                        <div className="rounded-lg border bg-white p-3">
+                          <div className="text-xs text-gray-500">
+                            Full Address
+                          </div>
+                          <div className="mt-1 text-sm font-semibold text-gray-800">
+                            {locationText}
+                          </div>
+                        </div>
+                      </div>
+
+                      {mapsLink ? (
+                        <a
+                          href={mapsLink}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-blue-700 hover:underline"
+                        >
+                          <Navigation
+                            size={15}
+                          />
+                          View pinned location on Google Maps
+                        </a>
+                      ) : (
+                        <p className="mt-3 text-xs text-gray-500">
+                          No GPS pin was shared for
+                          this order � use the
+                          address above.
+                        </p>
+                      )}
                     </div>
 
                     {/* ORDER ACTIONS */}
@@ -1885,7 +2100,7 @@ export const ShopManager: React.FC = () => {
                   </label>
 
                   <span className="text-xs text-gray-500">
-                    JPG, PNG, WEBP or GIF â€¢ Max 5MB
+                    JPG, PNG, WEBP or GIF � Max 5MB
                   </span>
                 </div>
 
@@ -2102,6 +2317,19 @@ export const ShopManager: React.FC = () => {
                     "Product"}
                 </div>
 
+                <div className="mt-1 text-sm text-gray-500">
+                  Qty:{" "}
+                  {getOrderQuantity(
+                    selectedOrder
+                  )}
+                </div>
+
+                <div className="mt-1 text-sm text-gray-500">
+                  {getOrderLocationText(
+                    selectedOrder
+                  )}
+                </div>
+
                 <div className="mt-2 text-sm">
                   Payment:{" "}
                   <strong>
@@ -2118,6 +2346,19 @@ export const ShopManager: React.FC = () => {
                       "None"}
                   </strong>
                 </div>
+
+                {getOrderNote(
+                  selectedOrder
+                ) && (
+                  <div className="mt-2 text-sm">
+                    Customer Note:{" "}
+                    <strong>
+                      {getOrderNote(
+                        selectedOrder
+                      )}
+                    </strong>
+                  </div>
+                )}
               </div>
 
               <div>

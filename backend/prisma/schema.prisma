@@ -141,9 +141,24 @@ model Order {
   id        String @id @default(uuid())
   productId String
 
+  quantity     Int     @default(1)
+  customerNote String?
+
   customerName  String
   customerPhone String
   customerEmail String?
+
+  // Delivery location captured on the public checkout form.
+  // County/Town/Place/Road are required by the frontend form;
+  // kept nullable here so existing rows created before this
+  // migration remain valid.
+  locationCounty   String?
+  locationTown     String?
+  locationPlace    String?
+  locationRoad     String?
+  locationBuilding String?
+  locationLat      Float?
+  locationLng      Float?
 
   paymentMethod String
   paymentId     String?

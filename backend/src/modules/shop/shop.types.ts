@@ -11,11 +11,27 @@ export interface CreateProductInput {
 export interface UpdateProductInput
   extends Partial<CreateProductInput> {}
 
+export interface OrderLocationInput {
+  county: string;
+  town: string;
+  place: string;
+  road: string;
+  building?: string;
+  lat?: number;
+  lng?: number;
+}
+
 export interface CreateOrderInput {
   productId: string;
+
+  quantity?: number;
+  customerNote?: string;
+
   customerName: string;
   customerPhone: string;
   customerEmail?: string;
+
+  location: OrderLocationInput;
 
   paymentMethod: "PAY_NOW" | "PAY_LATTER";
 
