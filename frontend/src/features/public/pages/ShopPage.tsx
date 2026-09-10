@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { shopApi } from "../../../api/shop";
 import type { Product } from "../../../api/shop";
 import ProductPopup from "../components/shop/ProductPopup";
@@ -59,7 +59,7 @@ export const ShopPage: React.FC = () => {
                 </p>
                 <div className="flex justify-between items-center">
                   <span className="text-2xl font-extrabold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                    KSh ${product.price.toFixed(2)}
+                    KSh {product.price.toFixed(2)}
                   </span>
                   <button
                     onClick={() => setSelectedProduct(product)}
@@ -75,7 +75,7 @@ export const ShopPage: React.FC = () => {
 
         {products.length === 0 && (
           <div className="text-center py-16">
-            <div className="text-6xl mb-4">🛍️</div>
+            <div className="text-6xl mb-4">???</div>
             <p className="text-slate-600 text-lg font-medium">No products available yet.</p>
             <p className="text-slate-500 text-sm mt-2">Check back soon!</p>
           </div>
