@@ -2,6 +2,30 @@ import { PrismaClient } from "../../../generated/prisma/index.js";
 const prisma = new PrismaClient();
 export class ShopService {
     /* =========================================================
+       RESPONSE SHAPING
+       The DB stores delivery location as flat columns
+       (locationCounty, locationTown, ...). The frontend expects
+       a nested `location: { county, town, ... }` object, so every
+       order returned to a client goes through this formatter.
+    ========================================================= */
+    formatOrder(order) {
+        if (!order)
+            return order;
+        const { locationCounty, locationTown, locationPlace, locationRoad, locationBuilding, locationLat, locationLng, ...rest } = order;
+        return {
+            ...rest,
+            location: {
+                county: locationCounty,
+                town: locationTown,
+                place: locationPlace,
+                road: locationRoad,
+                building: locationBuilding,
+                lat: locationLat,
+                lng: locationLng,
+            },
+        };
+    }
+    /* =========================================================
        PUBLIC PRODUCTS
     ========================================================= */
     async getAllProducts() {
@@ -103,12 +127,40 @@ export class ShopService {
         if (product.stock <= 0) {
             throw new Error("This product is currently out of stock.");
         }
-        return await prisma.order.create({
+        const quantity = Number.isInteger(data.quantity) &&
+            data.quantity > 0
+            ? data.quantity
+            : 1;
+        if (quantity > product.stock) {
+            throw new Error(`Only ${product.stock} unit(s) of this product are left in stock.`);
+        }
+        const location = data.location;
+        if (!location ||
+            !location.county?.trim() ||
+            !location.town?.trim() ||
+            !location.place?.trim() ||
+            !location.road?.trim()) {
+            throw new Error("Delivery location (county, town, place and road) is required.");
+        }
+        const created = await prisma.order.create({
             data: {
                 productId: data.productId,
+                quantity,
+                customerNote: data.customerNote?.trim() || null,
                 customerName: data.customerName.trim(),
                 customerPhone: data.customerPhone.trim(),
                 customerEmail: data.customerEmail?.trim() || null,
+                locationCounty: location.county.trim(),
+                locationTown: location.town.trim(),
+                locationPlace: location.place.trim(),
+                locationRoad: location.road.trim(),
+                locationBuilding: location.building?.trim() || null,
+                locationLat: typeof location.lat === "number"
+                    ? location.lat
+                    : null,
+                locationLng: typeof location.lng === "number"
+                    ? location.lng
+                    : null,
                 paymentMethod: data.paymentMethod,
                 paymentId: data.paymentId?.trim() || null,
                 deliveryType: data.deliveryType,
@@ -118,12 +170,13 @@ export class ShopService {
                 product: true,
             },
         });
+        return this.formatOrder(created);
     }
     /* =========================================================
        ADMIN ORDERS
     ========================================================= */
     async getAdminOrders() {
-        return await prisma.order.findMany({
+        const orders = await prisma.order.findMany({
             include: {
                 product: true,
             },
@@ -131,6 +184,7 @@ export class ShopService {
                 createdAt: "desc",
             },
         });
+        return orders.map((order) => this.formatOrder(order));
     }
     /* =========================================================
        CONFIRM PAYMENT
@@ -148,7 +202,7 @@ export class ShopService {
             throw new Error("Order not found.");
         }
         if (order.status === "CONFIRMED") {
-            return order;
+            return this.formatOrder(order);
         }
         const updatedOrder = await prisma.order.update({
             where: {
@@ -163,13 +217,13 @@ export class ShopService {
                 product: true,
             },
         });
-        return updatedOrder;
+        return this.formatOrder(updatedOrder);
     }
     /* =========================================================
        UPDATE ORDER NOTE
     ========================================================= */
     async updateOrderNote(id, note) {
-        return await prisma.order.update({
+        const updatedOrder = await prisma.order.update({
             where: {
                 id,
             },
@@ -180,6 +234,7 @@ export class ShopService {
                 product: true,
             },
         });
+        return this.formatOrder(updatedOrder);
     }
     /* =========================================================
        UPDATE ORDER STATUS
@@ -194,7 +249,7 @@ export class ShopService {
         if (!allowedStatuses.includes(status)) {
             throw new Error("Invalid order status.");
         }
-        return await prisma.order.update({
+        const updatedOrder = await prisma.order.update({
             where: {
                 id,
             },
@@ -205,5 +260,6 @@ export class ShopService {
                 product: true,
             },
         });
+        return this.formatOrder(updatedOrder);
     }
 }

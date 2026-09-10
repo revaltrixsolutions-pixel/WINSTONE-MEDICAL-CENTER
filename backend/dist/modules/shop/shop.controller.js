@@ -254,7 +254,12 @@ export class ShopController {
                 });
                 return;
             }
-            const baseUrl = `${req.protocol}://${req.get("host")}`;
+            const configuredBaseUrl = process.env.PUBLIC_API_URL ||
+                process.env.RENDER_EXTERNAL_URL;
+            const baseUrl = (configuredBaseUrl ||
+                `${req.protocol}://${req.get("host")}`)
+                .replace(/^http:\/\//i, "https://")
+                .replace(/\/+$/, "");
             const imageUrl = `${baseUrl}/uploads/shop/${req.file.filename}`;
             res.status(201).json({
                 success: true,
