@@ -29,6 +29,7 @@ import {
 
 import { shopApi } from "../../../../api/shop";
 import type { Order, Product } from "../../../../api/shop";
+import { getImageUrl } from "../../../../api/axios";
 
 /* =========================================================
    TYPES
@@ -1146,7 +1147,9 @@ export const ShopManager: React.FC = () => {
                         <div className="h-48 overflow-hidden bg-gray-100">
                           <img
                             src={
-                              product.imageUrls[0]
+                              getImageUrl(
+                                product.imageUrls[0]
+                              )
                             }
                             alt={
                               product.name
@@ -1556,8 +1559,10 @@ export const ShopManager: React.FC = () => {
                             ?.imageUrls?.[0] && (
                             <img
                               src={
-                                order.product
-                                  .imageUrls[0]
+                                getImageUrl(
+                                  order.product
+                                    .imageUrls[0]
+                                )
                               }
                               alt={
                                 order.product
@@ -2154,7 +2159,7 @@ export const ShopManager: React.FC = () => {
                           className="group relative overflow-hidden rounded-xl border bg-gray-100"
                         >
                           <img
-                            src={imageUrl}
+                            src={getImageUrl(imageUrl)}
                             alt={`Product image ${
                               index + 1
                             }`}
