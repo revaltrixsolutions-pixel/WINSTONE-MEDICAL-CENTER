@@ -12,6 +12,7 @@ import { Link } from "react-router-dom";
 import HomepageHeader from "@/layout/HomepageHeader.tsx";
 import HomepageFooter from "@/layout/HomepageFooter.tsx";
 import { getGalleryItems, type GalleryItem } from "@/api/gallery";
+import { getImageUrl } from "@/api/axios";
 
 export default function GalleryPage() {
   const [filter, setFilter] = useState<
@@ -273,14 +274,14 @@ export default function GalleryPage() {
                   <div className="relative h-64 overflow-hidden bg-slate-900">
                     {item.type === "image" ? (
                       <img
-                        src={item.url}
+                        src={getImageUrl(item.url)}
                         alt={item.title}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                         loading="lazy"
                       />
                     ) : (
                       <video
-                        src={item.url}
+                        src={getImageUrl(item.url)}
                         className="w-full h-full object-cover"
                         controls
                         preload="metadata"

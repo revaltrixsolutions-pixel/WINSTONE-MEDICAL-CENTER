@@ -16,6 +16,7 @@
   LoaderCircle,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { getImageUrl } from "@/api/axios";
 
 type MedicalService = {
   id: string;
@@ -418,7 +419,7 @@ export default function ServicesPage() {
                     <div className="space-y-3">
                       <div className="flex w-full items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-slate-950 p-2 shadow-xl">
                         <img
-                          src={currentImage}
+                          src={getImageUrl(currentImage)}
                           alt={selectedService.name}
                           className="max-h-[50vh] h-auto w-full rounded-xl object-contain"
                         />
@@ -445,7 +446,7 @@ export default function ServicesPage() {
                               }`}
                             >
                               <img
-                                src={image}
+                                src={getImageUrl(image)}
                                 alt={`${selectedService.name} ${index + 1}`}
                                 className="h-full w-full object-cover"
                               />

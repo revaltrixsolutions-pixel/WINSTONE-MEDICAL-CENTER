@@ -3,18 +3,30 @@
 const API_BASE_URL = (
   import.meta.env.VITE_API_URL?.trim() ||
   "https://winstone-medical-center-1.onrender.com"
-).replace(/^http:\/\//i, "https://");
+)
+  .replace(/^http:\/\//i, "https://")
+  .replace(/\/api\/?$/i, "");
 
 export const getImageUrl = (value: string): string => {
-  if (value.startsWith("http://")) {
-    return `https://${value.slice("http://".length)}`;
+  const imageValue = value.trim();
+
+  if (!imageValue || imageValue.startsWith("data:")) {
+    return imageValue;
   }
 
-  if (value.startsWith("/")) {
-    return `${API_BASE_URL.replace(/\/+$/, "")}${value}`;
+  if (imageValue.startsWith("http://")) {
+    return `https://${imageValue.slice("http://".length)}`;
   }
 
-  return value;
+  if (imageValue.startsWith("https://")) {
+    return imageValue;
+  }
+
+  const path = imageValue.startsWith("/")
+    ? imageValue
+    : `/${imageValue}`;
+
+  return `${API_BASE_URL.replace(/\/+$/, "")}${path}`;
 };
 
 const normalizeImageFields = (value: unknown): unknown => {

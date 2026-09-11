@@ -14,6 +14,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { getServices, type MedicalService } from "@/data/services";
+import { getImageUrl } from "@/api/axios";
 
 const iconMap = {
   Stethoscope,
@@ -293,7 +294,7 @@ export default function HomepageServices() {
                   <div className="space-y-3">
                     <div className="w-full rounded-2xl border border-white/10 bg-slate-950 overflow-hidden shadow-xl flex items-center justify-center p-2">
                       <img
-                        src={modalImages[activeImageIndex] || modalImages[0]}
+                        src={getImageUrl(modalImages[activeImageIndex] || modalImages[0])}
                         alt={selectedService.name}
                         className="w-full h-auto max-h-[60vh] object-contain rounded-xl transition-all duration-300"
                       />
@@ -319,7 +320,7 @@ export default function HomepageServices() {
                               activeImageIndex === i ? "border-cyan-400 scale-105 shadow-md shadow-cyan-500/30" : "border-white/10 opacity-60 hover:opacity-100"
                             }`}
                           >
-                            <img src={img} alt="" className="h-full w-full object-cover" />
+                            <img src={getImageUrl(img)} alt="" className="h-full w-full object-cover" />
                           </button>
                         ))}
                       </div>
