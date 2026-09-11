@@ -1,4 +1,6 @@
-﻿export interface MedicalService {
+﻿import { getImageUrl } from "@/api/axios";
+
+export interface MedicalService {
   id: string;
   name: string;
   shortDescription?: string;
@@ -62,8 +64,8 @@ function normalizeService(service: MedicalService): MedicalService {
 
   return {
     ...service,
-    imageUrls,
-    imageUrl: imageUrls[0] || "",
+    imageUrls: imageUrls.map(getImageUrl),
+    imageUrl: imageUrls[0] ? getImageUrl(imageUrls[0]) : "",
     active: Boolean(service.active),
   };
 }
