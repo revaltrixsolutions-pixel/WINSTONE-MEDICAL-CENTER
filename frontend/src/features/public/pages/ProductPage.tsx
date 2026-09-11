@@ -3,6 +3,7 @@ import { ArrowLeft, ShoppingCart, Package, Loader2 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { shopApi, type Product } from "@/api/shop";
 import { getImageUrl } from "@/api/axios";
+import ProductPopup from "../components/shop/ProductPopup";
 
 export default function ProductPage() {
   const { id } = useParams<{ id: string }>();
@@ -10,6 +11,7 @@ export default function ProductPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showPurchase, setShowPurchase] = useState(false);
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -161,13 +163,14 @@ export default function ProductPage() {
               </div>
 
               {product.stock > 0 ? (
-                <Link
-                  to={`/shop?product=${product.id}`}
+                <button
+                  type="button"
+                  onClick={() => setShowPurchase(true)}
                   className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
                 >
                   <ShoppingCart className="w-5 h-5" />
                   Buy This Product
-                </Link>
+                </button>
               ) : (
                 <button
                   disabled
@@ -183,6 +186,13 @@ export default function ProductPage() {
             </div>
           </div>
         </div>
+
+        {showPurchase && (
+          <ProductPopup
+            product={product}
+            onClose={() => setShowPurchase(false)}
+          />
+        )}
       </div>
     </div>
   );
