@@ -1,4 +1,5 @@
 import { ShopService } from "./shop.service.js";
+import { uploadBuffer } from "../../config/cloudinary.js";
 const shopService = new ShopService();
 export class ShopController {
     // =========================================================
@@ -254,11 +255,11 @@ export class ShopController {
                 });
                 return;
             }
-            const imageUrl = `/uploads/shop/${req.file.filename}`;
+            const uploadedImage = await uploadBuffer(req.file.buffer, "winston-medical/shop");
             res.status(201).json({
                 success: true,
                 message: "Product image uploaded successfully.",
-                imageUrl,
+                imageUrl: uploadedImage.secureUrl,
             });
         }
         catch (error) {

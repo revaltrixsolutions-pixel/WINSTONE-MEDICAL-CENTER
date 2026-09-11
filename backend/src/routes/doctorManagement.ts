@@ -1,9 +1,8 @@
 import { Router, type Request, type Response } from "express";
 import multer from "multer";
-import fs from "fs";
-import path from "path";
 
 import { PrismaClient } from "../../generated/prisma/index.js";
+import { uploadBuffer } from "../config/cloudinary.js";
 
 const prisma = new PrismaClient();
 
@@ -13,35 +12,8 @@ const router = Router();
    IMAGE UPLOAD CONFIGURATION
 ========================================================= */
 
-const uploadsDirectory = path.resolve(process.cwd(), "uploads", "doctors");
-
-if (!fs.existsSync(uploadsDirectory)) {
-  fs.mkdirSync(uploadsDirectory, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    cb(null, uploadsDirectory);
-  },
-
-  filename: (_req, file, cb) => {
-    const extension = path.extname(file.originalname).toLowerCase();
-
-    const safeName = path
-      .basename(file.originalname, extension)
-      .replace(/[^a-zA-Z0-9-_]/g, "-")
-      .substring(0, 50);
-
-    const uniqueName = `${Date.now()}-${Math.round(
-      Math.random() * 1_000_000
-    )}-${safeName}${extension}`;
-
-    cb(null, uniqueName);
-  },
-});
-
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
 
   limits: {
     fileSize: 5 * 1024 * 1024,
@@ -118,7 +90,12 @@ router.post(
        * /uploads/doctors/123456789-doctor.jpg
        */
 
-      const imageUrl = `/uploads/doctors/${req.file.filename}`;
+      const uploadedImage = await uploadBuffer(
+        req.file.buffer,
+        "winston-medical/doctors",
+      );
+
+      const imageUrl = uploadedImage.secureUrl;
 
       console.log("Doctor image uploaded:", imageUrl);
 

@@ -2,8 +2,7 @@ import { Router } from "express";
 import type { Request, Response } from "express";
 import { PrismaClient } from "../../generated/prisma/index.js";
 import multer from "multer";
-import path from "path";
-import fs from "fs";
+import { uploadBuffer } from "../config/cloudinary.js";
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -18,43 +17,12 @@ type GalleryType = "image" | "video" | "embed";
    UPLOAD DIRECTORY
    ========================================================= */
 
-const uploadDirectory = path.resolve(
-  process.cwd(),
-  "uploads",
-  "gallery",
-);
-
-if (!fs.existsSync(uploadDirectory)) {
-  fs.mkdirSync(uploadDirectory, {
-    recursive: true,
-  });
-}
-
 /* =========================================================
    MULTER
    ========================================================= */
 
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    cb(null, uploadDirectory);
-  },
-
-  filename: (_req, file, cb) => {
-    const extension = path.extname(file.originalname);
-
-    const baseName = path
-      .basename(file.originalname, extension)
-      .replace(/[^a-zA-Z0-9_-]/g, "-")
-      .toLowerCase();
-
-    const uniqueName = `${Date.now()}-${baseName}${extension}`;
-
-    cb(null, uniqueName);
-  },
-});
-
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
 
   limits: {
     fileSize: 10 * 1024 * 1024,
@@ -178,64 +146,6 @@ function normalizeYouTubeUrl(value: string): string {
   }
 
   return input;
-}
-
-function getPublicFileUrl(
-  req: Request,
-  filename: string,
-): string {
-  const forwardedProto = req.headers["x-forwarded-proto"];
-
-  const protocol =
-    typeof forwardedProto === "string"
-      ? forwardedProto.split(",")[0].trim()
-      : req.protocol;
-
-  const host = req.get("host");
-
-  return `${protocol}://${host}/uploads/gallery/${encodeURIComponent(
-    filename,
-  )}`;
-}
-
-function deletePhysicalFile(
-  fileUrl: string | null | undefined,
-): void {
-  if (!fileUrl) {
-    return;
-  }
-
-  try {
-    const parsed = new URL(fileUrl);
-
-    const pathname = decodeURIComponent(
-      parsed.pathname,
-    );
-
-    if (
-      !pathname.startsWith(
-        "/uploads/gallery/",
-      )
-    ) {
-      return;
-    }
-
-    const filename = path.basename(pathname);
-
-    const fullPath = path.join(
-      uploadDirectory,
-      filename,
-    );
-
-    if (fs.existsSync(fullPath)) {
-      fs.unlinkSync(fullPath);
-    }
-  } catch (error) {
-    console.error(
-      "Failed to delete gallery file:",
-      error,
-    );
-  }
 }
 
 /* =========================================================
@@ -469,11 +379,10 @@ router.post(
             ? "video"
             : "image";
 
-      const fileUrl =
-        getPublicFileUrl(
-          req,
-          req.file.filename,
-        );
+      const uploadedFile = await uploadBuffer(
+        req.file.buffer,
+        "winston-medical/gallery",
+      );
 
       const item =
         await prisma.galleryItem.create({
@@ -493,7 +402,7 @@ router.post(
 
             type: detectedType,
 
-            url: fileUrl,
+            url: uploadedFile.secureUrl,
 
             isActive: normalizeBoolean(
               isActive,
@@ -509,24 +418,6 @@ router.post(
         item,
       });
     } catch (error) {
-      if (req.file) {
-        try {
-          const uploadedFile =
-            path.join(
-              uploadDirectory,
-              req.file.filename,
-            );
-
-          if (
-            fs.existsSync(uploadedFile)
-          ) {
-            fs.unlinkSync(uploadedFile);
-          }
-        } catch {
-          // Ignore cleanup failure.
-        }
-      }
-
       console.error(
         "POST /api/gallery/upload failed:",
         error,
@@ -704,8 +595,6 @@ router.delete(
           id,
         },
       });
-
-      deletePhysicalFile(existing.url);
 
       return res.status(200).json({
         success: true,
