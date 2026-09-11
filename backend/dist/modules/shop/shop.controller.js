@@ -254,7 +254,7 @@ export class ShopController {
                 });
                 return;
             }
-            const imageUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
+            const imageUrl = `/uploads/shop/${req.file.filename}`;
             res.status(201).json({
                 success: true,
                 message: "Product image uploaded successfully.",
